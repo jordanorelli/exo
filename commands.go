@@ -201,7 +201,7 @@ var colonizeCommand = &Command{
 		fn = func() {
 			reward := int64(rand.NormFloat64()*5.0 + 100.0*system.miningRate)
 			if system.colonizedBy != nil {
-				system.colonizedBy.money += reward
+				system.colonizedBy.Deposit(reward)
 				fmt.Fprintf(system.colonizedBy, "mining colony on %s pays you %d space duckets. total: %d space duckets.\n", system.name, reward, system.colonizedBy.money)
 			}
 			After(5*time.Second, fn)
@@ -214,7 +214,7 @@ var colonizeCommand = &Command{
 		}
 
 		if conn.money > 2000 {
-			conn.money -= 2000
+			conn.Withdraw(2000)
 			system.colonizedBy = conn
 			fmt.Fprintf(conn, "set up a mining colony on %s\n", conn.System().name)
 			After(5*time.Second, fn)
@@ -279,7 +279,7 @@ var mkBombCommand = &Command{
 			fmt.Fprintf(conn, "not enough money!  Bombs cost 800 space duckets to build, you only have %d in the bank.\n", conn.money)
 			return
 		}
-		conn.money -= 800
+		conn.Withdraw(800)
 		conn.bombs += 1
 		fmt.Fprintf(conn, "built a bomb!\n")
 		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)

@@ -96,10 +96,16 @@ func (c *Connection) InTransit() bool {
 
 func (c *Connection) RecordScan() {
 	c.lastScan = time.Now()
+	After(1*time.Minute, func() {
+		fmt.Fprintln(c, "scanner ready")
+	})
 }
 
 func (c *Connection) RecordBomb() {
 	c.lastBomb = time.Now()
+	After(1500*time.Millisecond, func() {
+		fmt.Fprintln(c, "bomb arsenal reloaded")
+	})
 }
 
 func (c *Connection) CanScan() bool {
@@ -141,9 +147,23 @@ func (c *Connection) IsMining() bool {
 }
 
 func (c *Connection) Payout() {
+	if c.dead {
+		return
+	}
 	reward := int64(rand.NormFloat64()*5.0 + 100.0*c.System().miningRate)
-	c.money += reward
+	c.Deposit(reward)
 	fmt.Fprintf(c, "mined: %d space duckets. total: %d\n", reward, c.money)
+}
+
+func (c *Connection) Withdraw(n int64) {
+	c.money -= n
+}
+
+func (c *Connection) Deposit(n int64) {
+	c.money += n
+	if c.money >= 25000 {
+		c.Win()
+	}
 }
 
 func (c *Connection) Win() {
