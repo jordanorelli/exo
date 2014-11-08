@@ -21,6 +21,7 @@ type System struct {
 }
 
 func (s *System) Arrive(p *Connection) {
+	p.SetSystem(s)
 	log_info("player %s has arrived at system %s", p.PlayerName(), s.name)
 	if s.players == nil {
 		s.players = make(map[*Connection]bool, 8)

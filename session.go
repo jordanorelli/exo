@@ -10,7 +10,8 @@ import (
 type Connection struct {
 	net.Conn
 	*bufio.Reader
-	player *Player
+	player   *Player
+	location *System
 }
 
 func NewConnection(conn net.Conn) *Connection {
@@ -50,6 +51,14 @@ func (c *Connection) Login() {
 		break
 	}
 
+}
+
+func (c *Connection) SetSystem(s *System) {
+	c.location = s
+}
+
+func (c *Connection) System() *System {
+	return c.location
 }
 
 func (c *Connection) Close() error {

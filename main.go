@@ -63,6 +63,11 @@ func handleConnection(conn *Connection) {
 		}
 		line = strings.TrimSpace(line)
 		parts := strings.Split(line, " ")
+		if isCommand(parts[0]) {
+			runCommand(conn, parts[0], parts[1:]...)
+			continue
+		}
+
 		switch parts[0] {
 		case "scan":
 			for _, otherPlanet := range index {
