@@ -33,7 +33,7 @@ func planetsTable() {
 }
 
 func planetsData() {
-	n, err := countPlanets()
+	n, err := countSystems()
 	if err != nil {
 		log_error("couldn't count planets: %v", err)
 		return
@@ -49,7 +49,7 @@ func planetsData() {
 			planet.Store(db)
 		}
 	}
-	indexPlanets(db)
+	indexSystems()
 }
 
 func edgesTable() {

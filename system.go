@@ -99,7 +99,7 @@ func (e *System) Nearby(n int) ([]Neighbor, error) {
 	return neighbors, nil
 }
 
-func countPlanets() (int, error) {
+func countSystems() (int, error) {
 	row := db.QueryRow(`select count(*) from planets`)
 
 	var n int
@@ -115,11 +115,7 @@ func dist3d(x1, y1, z1, x2, y2, z2 float64) float64 {
 	return math.Sqrt(sq(x1-x2) + sq(y1-y2) + sq(z1-z2))
 }
 
-func planetDistance(p1, p2 System) float64 {
-	return dist3d(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
-}
-
-func indexPlanets(db *sql.DB) map[int]*System {
+func indexSystems() map[int]*System {
 	rows, err := db.Query(`select * from planets`)
 	if err != nil {
 		log_error("unable to select all planets: %v", err)
@@ -138,7 +134,7 @@ func indexPlanets(db *sql.DB) map[int]*System {
 	return index
 }
 
-func randomPlanet() (*System, error) {
+func randomSystem() (*System, error) {
 	n := len(index)
 	if n == 0 {
 		return nil, fmt.Errorf("no planets are known to exist")

@@ -40,16 +40,16 @@ func handleConnection(conn *Connection) {
 	defer conn.Close()
 	conn.Login()
 
-	planet, err := randomPlanet()
+	system, err := randomSystem()
 	if err != nil {
-		log_error("player %s failed to get random planet: %v", conn.PlayerName(), err)
+		log_error("player %s failed to get random system: %v", conn.PlayerName(), err)
 		return
 	}
-	planet.Arrive(conn)
-	if planet.planets == 1 {
-		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", planet.name, planet.planets)
+	system.Arrive(conn)
+	if system.planets == 1 {
+		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", system.name, system.planets)
 	} else {
-		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", planet.name, planet.planets)
+		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", system.name, system.planets)
 	}
 	for {
 		line, err := conn.ReadString('\n')
@@ -70,30 +70,30 @@ func handleConnection(conn *Connection) {
 
 		switch parts[0] {
 		case "scan":
-			for _, otherPlanet := range index {
-				if otherPlanet.name == planet.name {
+			for _, otherSystem := range index {
+				if otherSystem.name == system.name {
 					continue
 				}
 				go func(p *System) {
-					dist := planetDistance(*planet, *p)
+					dist := system.DistanceTo(p)
 					delay := time.Duration(int64(dist * 100000000))
 					time.Sleep(delay)
 					mu.Lock()
-					fmt.Fprintf(conn, "PONG from planet %s (%v)\n", p.name, delay)
+					fmt.Fprintf(conn, "PONG from system %s (%v)\n", p.name, delay)
 					mu.Unlock()
-				}(otherPlanet)
+				}(otherSystem)
 			}
 		case "broadcast":
 			msg := strings.Join(parts[1:], " ")
 			log_info("player %s is broadcasting message %s", conn.PlayerName(), msg)
 			for _, otherSystem := range index {
-				if otherSystem.name == planet.name {
-					log_info("skpping duplicate system %s", planet.name)
+				if otherSystem.name == system.name {
+					log_info("skpping duplicate system %s", system.name)
 					continue
 				}
 				go func(s *System) {
-					log_info("message reached planet %s with %d inhabitants", s.name, s.NumInhabitants())
-					dist := planetDistance(*planet, *s) * 0.5
+					log_info("message reached system %s with %d inhabitants", s.name, s.NumInhabitants())
+					dist := system.DistanceTo(s) * 0.5
 					delay := time.Duration(int64(dist * 100000000))
 					time.Sleep(delay)
 					s.EachConn(func(conn *Connection) {
@@ -102,7 +102,7 @@ func handleConnection(conn *Connection) {
 				}(otherSystem)
 			}
 		case "nearby":
-			neighbors, err := planet.Nearby(25)
+			neighbors, err := system.Nearby(25)
 			fmt.Fprintf(conn, "fetching nearby star systems\n")
 			if err != nil {
 				log_error("%v", err)
