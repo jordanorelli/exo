@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -11,17 +12,17 @@ import (
 )
 
 var (
-	dataPath = "/projects/exo/expl.speck"
+	dataPath  = "/projects/exo/expl.speck"
+	info_log  *log.Logger
+	error_log *log.Logger
 )
 
 func log_error(template string, args ...interface{}) {
-	fmt.Fprint(os.Stderr, "ERROR ")
-	fmt.Fprintf(os.Stderr, template+"\n", args...)
+	error_log.Printf(template, args...)
 }
 
 func log_info(template string, args ...interface{}) {
-	fmt.Fprint(os.Stdout, "INFO ")
-	fmt.Fprintf(os.Stdout, template+"\n", args...)
+	info_log.Printf(template, args...)
 }
 
 func bail(status int, template string, args ...interface{}) {
@@ -95,6 +96,8 @@ func handleConnection(conn *Connection) {
 func main() {
 	dbconnect()
 	rand.Seed(time.Now().UnixNano())
+	info_log = log.New(os.Stdout, "[INFO] ", 0)
+	error_log = log.New(os.Stderr, "[ERROR] ", 0)
 
 	setupDb()
 	listener, err := net.Listen("tcp", ":9220")
