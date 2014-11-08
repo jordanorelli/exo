@@ -123,6 +123,6 @@ func randomPlanet() (*exoSystem, error) {
 	}
 
 	pick := rand.Intn(n)
-    planet := planetIndex[pick]
-    return &planet, nil
+	planet := planetIndex[pick]
+	return &planet, nil
 }
