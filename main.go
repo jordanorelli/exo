@@ -64,7 +64,7 @@ func handleConnection(conn *Connection) {
 				if otherPlanet.name == planet.name {
 					continue
 				}
-				go func(p exoSystem) {
+				go func(p Planet) {
 					dist := planetDistance(*planet, p)
 					delay := time.Duration(int64(dist * 100000000))
 					time.Sleep(delay)
