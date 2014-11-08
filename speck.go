@@ -54,7 +54,7 @@ func (e exoSystem) Store(db *sql.DB) {
 	}
 }
 
-func countPlanets(db *sql.DB) (int, error) {
+func countPlanets() (int, error) {
 	row := db.QueryRow(`select count(*) from planets`)
 
 	var n int

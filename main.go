@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-var dataPath = "/projects/exo/expl.speck"
+var (
+	dataPath = "/projects/exo/expl.speck"
+)
 
 func log_error(template string, args ...interface{}) {
 	fmt.Fprint(os.Stderr, "ERROR ")
@@ -82,6 +84,7 @@ func handleConnection(conn *Connection) {
 }
 
 func main() {
+	dbconnect()
 	rand.Seed(time.Now().UnixNano())
 
 	setupDb()

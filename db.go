@@ -9,19 +9,20 @@ import (
 	"os"
 )
 
-var planetIndex map[int]exoSystem
+var (
+	planetIndex map[int]exoSystem
+	db          *sql.DB
+)
 
-func dbconnect() (*sql.DB, error) {
-	return sql.Open("sqlite3", "./exo.db")
+func dbconnect() {
+	var err error
+	db, err = sql.Open("sqlite3", "./exo.db")
+	if err != nil {
+		bail(E_No_DB, "couldn't connect to db: %v", err)
+	}
 }
 
-func setupDb() {
-	db, err := dbconnect()
-	if err != nil {
-		bail(E_No_DB, "unable to open database: %v", err)
-	}
-	defer db.Close()
-
+func planetsTable() {
 	stmnt := `create table if not exists planets (
         id integer not null primary key autoincrement,
         name text,
@@ -30,13 +31,17 @@ func setupDb() {
         z integer,
         planets integer
     );`
-	_, err = db.Exec(stmnt)
+	if _, err := db.Exec(stmnt); err != nil {
+		log_error("couldn't create planets table: %v", err)
+	}
+}
+
+func planetsData() {
+	n, err := countPlanets()
 	if err != nil {
-		log_error("couldn't create table: %v", err)
+		log_error("couldn't count planets: %v", err)
 		return
 	}
-
-	n, err := countPlanets(db)
 	if n == 0 {
 		fi, err := os.Open(dataPath)
 		if err != nil {
@@ -48,32 +53,26 @@ func setupDb() {
 			planet.Store(db)
 		}
 	}
-
 	indexPlanets(db)
-	// log_info("%v", idx)
-	// fillEdges(db, idx)
+}
 
-	stmnt = `create table if not exists edges (
+func edgesTable() {
+	stmnt := `create table if not exists edges (
         id_1 integer,
         id_2 integer,
         distance real
     );`
-	_, err = db.Exec(stmnt)
-	if err != nil {
+	if _, err := db.Exec(stmnt); err != nil {
 		log_error("couldn't create distance table: %v", err)
-		return
 	}
+}
 
-	stmnt = `create table if not exists players (
-        id integer not null primary key autoincrement,
-        name text
-    );`
-	_, err = db.Exec(stmnt)
-	if err != nil {
-		log_error("couldn't create player table: %v", err)
-		return
-	}
-
+func setupDb() {
+	planetsTable()
+	planetsData()
+	edgesTable()
+	playersTable()
+	// fillEdges(db, idx)
 }
 
 func sq(x float64) float64 {

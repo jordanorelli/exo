@@ -10,7 +10,7 @@ import (
 type Connection struct {
 	net.Conn
 	*bufio.Reader
-	player Player
+	player *Player
 }
 
 func NewConnection(conn net.Conn) *Connection {
@@ -35,16 +35,31 @@ func (c *Connection) Login() {
 			continue
 		}
 		log_info("player connected: %v", name)
-		c.player = Player{name: name}
+		player, err := loadPlayer(name)
+		if err != nil {
+			log_error("could not read player: %v", err)
+			player = &Player{name: name}
+			if err := player.Create(); err != nil {
+
+			}
+			fmt.Fprintf(c, "godspeed, %s.\n", player.name)
+		} else {
+			c.player = player
+			fmt.Fprintf(c, "welcome back, %s.\n", player.name)
+		}
 		break
 	}
+
 }
 
 func (c *Connection) Close() error {
-	log_info("player disconnecting: %s", c.player.name)
+	log_info("player disconnecting: %s", c.PlayerName())
 	return c.Conn.Close()
 }
 
 func (c *Connection) PlayerName() string {
+	if c.player == nil {
+		return ""
+	}
 	return c.player.name
 }
