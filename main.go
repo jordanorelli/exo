@@ -96,6 +96,18 @@ func handleConnection(conn *Connection) {
 					})
 				}(otherSystem)
 			}
+		case "nearby":
+			neighbors, err := planet.Nearby(25)
+			fmt.Fprintf(conn, "fetching nearby star systems\n")
+			if err != nil {
+				log_error("%v", err)
+				break
+			}
+			fmt.Fprintf(conn, "found %d nearby systems\n", len(neighbors))
+			for _, neighbor := range neighbors {
+				other := index[neighbor.id]
+				fmt.Fprintf(conn, "%s: %v\n", other.name, neighbor.distance)
+			}
 		case "quit":
 			return
 		default:

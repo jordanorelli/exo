@@ -68,13 +68,43 @@ func setupDb() {
 	planetsData()
 	edgesTable()
 	playersTable()
-	// fillEdges(db, idx)
+	fillEdges()
 }
 
-func fillEdges(db *sql.DB, planets map[int]System) {
-	for i := 0; i < len(planets); i++ {
-		for j := i + 1; j < len(planets); j++ {
-			log_info("distance from %s to %s: %v", planets[i].name, planets[j].name, planetDistance(planets[i], planets[j]))
+func fillEdges() {
+	row := db.QueryRow(`select count(*) from edges;`)
+	var n int
+	if err := row.Scan(&n); err != nil {
+		log_error("couldn't get number of edges: %v", err)
+		return
+	}
+	if n > 0 {
+		return
+	}
+	for i := 0; i < len(index); i++ {
+		for j := 0; j < len(index); j++ {
+			if i == j {
+				continue
+			}
+			if index[i] == nil {
+				log_error("wtf there's nil shit in here for id %d", i)
+				continue
+			}
+			if index[j] == nil {
+				log_error("wtf there's nil shit in here 2 for id %d", j)
+				continue
+			}
+			dist := index[i].DistanceTo(index[j])
+			log_info("distance from %s to %s: %v", index[i].name, index[j].name, dist)
+			_, err := db.Exec(`
+                insert into edges
+                (id_1, id_2, distance)
+                values
+                (?, ?, ?)
+            ;`, i, j, dist)
+			if err != nil {
+				log_error("unable to write edge to db: %v", err)
+			}
 		}
 	}
 }

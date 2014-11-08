@@ -12,6 +12,7 @@ var (
 )
 
 type System struct {
+	id      int
 	x, y, z float64
 	planets int
 	name    string
@@ -59,8 +60,42 @@ func (e System) Store(db *sql.DB) {
 	}
 }
 
+func (s *System) DistanceTo(other *System) float64 {
+	return dist3d(s.x, s.y, s.z, other.x, other.y, other.z)
+}
+
 func (e System) String() string {
 	return fmt.Sprintf("<name: %s x: %v y: %v z: %v planets: %v>", e.name, e.x, e.y, e.z, e.planets)
+}
+
+type Neighbor struct {
+	id       int
+	distance float64
+}
+
+func (e *System) Nearby(n int) ([]Neighbor, error) {
+	rows, err := db.Query(`
+        select planets.id, edges.distance
+        from edges
+        join planets on edges.id_2 = planets.id
+        where edges.id_1 = ?
+        order by distance
+        limit ?
+    ;`, e.id, n)
+	if err != nil {
+		log_error("unable to get nearby systems for %s: %v", e.name, err)
+		return nil, err
+	}
+	neighbors := make([]Neighbor, 0, n)
+	for rows.Next() {
+		var neighbor Neighbor
+		if err := rows.Scan(&neighbor.id, &neighbor.distance); err != nil {
+			log_error("error unpacking row from nearby neighbors query: %v", err)
+			continue
+		}
+		neighbors = append(neighbors, neighbor)
+	}
+	return neighbors, nil
 }
 
 func countPlanets() (int, error) {
@@ -92,13 +127,12 @@ func indexPlanets(db *sql.DB) map[int]*System {
 	defer rows.Close()
 	index = make(map[int]*System, 551)
 	for rows.Next() {
-		var id int
 		p := System{}
-		if err := rows.Scan(&id, &p.name, &p.x, &p.y, &p.z, &p.planets); err != nil {
+		if err := rows.Scan(&p.id, &p.name, &p.x, &p.y, &p.z, &p.planets); err != nil {
 			log_info("unable to scan planet row: %v", err)
 			continue
 		}
-		index[id] = &p
+		index[p.id] = &p
 	}
 	return index
 }
