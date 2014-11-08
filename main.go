@@ -45,7 +45,11 @@ func handleConnection(conn *Connection) {
 		log_error("player %s failed to get random planet: %v", conn.PlayerName(), err)
 		return
 	}
-	fmt.Fprintf(conn, "you are on the planet %s\n", planet.name)
+	if planet.planets == 1 {
+		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", planet.name, planet.planets)
+	} else {
+		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", planet.name, planet.planets)
+	}
 	for {
 		line, err := conn.ReadString('\n')
 		switch err {
@@ -60,11 +64,11 @@ func handleConnection(conn *Connection) {
 		parts := strings.Split(line, " ")
 		switch parts[0] {
 		case "scan":
-			for _, otherPlanet := range planetIndex {
+			for _, otherPlanet := range index {
 				if otherPlanet.name == planet.name {
 					continue
 				}
-				go func(p Planet) {
+				go func(p System) {
 					dist := planetDistance(*planet, p)
 					delay := time.Duration(int64(dist * 100000000))
 					time.Sleep(delay)

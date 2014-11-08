@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	planetIndex map[int]Planet
-	db          *sql.DB
+	db *sql.DB
 )
 
 func dbconnect() {
@@ -44,7 +43,7 @@ func planetsData() {
 		if err != nil {
 			bail(E_No_Data, "unable to open data path: %v", err)
 		}
-		c := make(chan Planet)
+		c := make(chan System)
 		go speckStream(fi, c)
 		for planet := range c {
 			planet.Store(db)
@@ -72,7 +71,7 @@ func setupDb() {
 	// fillEdges(db, idx)
 }
 
-func fillEdges(db *sql.DB, planets map[int]Planet) {
+func fillEdges(db *sql.DB, planets map[int]System) {
 	for i := 0; i < len(planets); i++ {
 		for j := i + 1; j < len(planets); j++ {
 			log_info("distance from %s to %s: %v", planets[i].name, planets[j].name, planetDistance(planets[i], planets[j]))

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func speckStream(r io.ReadCloser, c chan Planet) {
+func speckStream(r io.ReadCloser, c chan System) {
 	defer close(c)
 	defer r.Close()
 	keep := regexp.MustCompile(`^\s*[\d-]`)
@@ -34,11 +34,11 @@ func speckStream(r io.ReadCloser, c chan Planet) {
 	}
 }
 
-func parseSpeckLine(line []byte) *Planet {
+func parseSpeckLine(line []byte) *System {
 	parts := strings.Split(string(line), " ")
 	var err error
 	var g errorGroup
-	s := new(Planet)
+	s := new(System)
 
 	s.x, err = strconv.ParseFloat(parts[0], 64)
 	g.AddError(err)
