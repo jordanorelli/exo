@@ -31,7 +31,7 @@ func speckStream(r io.ReadCloser, c chan exoSystem) {
 			continue
 		}
 		planet := parseSpeckLine(line)
-        c <- *planet
+		c <- *planet
 
 	}
 }
@@ -49,17 +49,17 @@ func (e exoSystem) Store(db *sql.DB) {
     values
     (?, ?, ?, ?, ?)
     ;`, e.name, e.x, e.y, e.z, e.planets)
-    if err != nil {
-        log_error("%v", err)
-    }
+	if err != nil {
+		log_error("%v", err)
+	}
 }
 
 func countPlanets(db *sql.DB) (int, error) {
-    row := db.QueryRow(`select count(*) from planets`)
+	row := db.QueryRow(`select count(*) from planets`)
 
-    var n int
-    err := row.Scan(&n)
-    return n, err
+	var n int
+	err := row.Scan(&n)
+	return n, err
 }
 
 func (e exoSystem) String() string {
