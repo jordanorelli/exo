@@ -2,13 +2,21 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"math"
+	"math/rand"
 	"os"
 )
 
+var planetIndex map[int]exoSystem
+
+func dbconnect() (*sql.DB, error) {
+	return sql.Open("sqlite3", "./exo.db")
+}
+
 func setupDb() {
-	db, err := sql.Open("sqlite3", "./exo.db")
+	db, err := dbconnect()
 	if err != nil {
 		bail(E_No_DB, "unable to open database: %v", err)
 	}
@@ -29,7 +37,6 @@ func setupDb() {
 	}
 
 	n, err := countPlanets(db)
-	log_info("num planets: %v error: %v", n, err)
 	if n == 0 {
 		fi, err := os.Open(dataPath)
 		if err != nil {
@@ -42,9 +49,9 @@ func setupDb() {
 		}
 	}
 
-	idx := indexPlanets(db)
-	log_info("%v", idx)
-	fillEdges(db, idx)
+	indexPlanets(db)
+	// log_info("%v", idx)
+	// fillEdges(db, idx)
 
 	stmnt = `create table if not exists edges (
         id_1 integer,
@@ -54,6 +61,16 @@ func setupDb() {
 	_, err = db.Exec(stmnt)
 	if err != nil {
 		log_error("couldn't create distance table: %v", err)
+		return
+	}
+
+	stmnt = `create table if not exists players (
+        id integer not null primary key autoincrement,
+        name text
+    );`
+	_, err = db.Exec(stmnt)
+	if err != nil {
+		log_error("couldn't create player table: %v", err)
 		return
 	}
 
@@ -78,7 +95,7 @@ func indexPlanets(db *sql.DB) map[int]exoSystem {
 		return nil
 	}
 	defer rows.Close()
-	planets := make(map[int]exoSystem, 551)
+	planetIndex = make(map[int]exoSystem, 551)
 	for rows.Next() {
 		var id int
 		p := exoSystem{}
@@ -86,9 +103,9 @@ func indexPlanets(db *sql.DB) map[int]exoSystem {
 			log_info("unable to scan planet row: %v", err)
 			continue
 		}
-		planets[id] = p
+		planetIndex[id] = p
 	}
-	return planets
+	return planetIndex
 }
 
 func fillEdges(db *sql.DB, planets map[int]exoSystem) {
@@ -97,4 +114,15 @@ func fillEdges(db *sql.DB, planets map[int]exoSystem) {
 			log_info("distance from %s to %s: %v", planets[i].name, planets[j].name, planetDistance(planets[i], planets[j]))
 		}
 	}
+}
+
+func randomPlanet() (*exoSystem, error) {
+	n := len(planetIndex)
+	if n == 0 {
+		return nil, fmt.Errorf("no planets are known to exist")
+	}
+
+	pick := rand.Intn(n)
+    planet := planetIndex[pick]
+    return &planet, nil
 }
