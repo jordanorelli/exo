@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var commandRegistry map[string]*Command
@@ -12,6 +14,7 @@ type Command struct {
 	name    string
 	help    string
 	handler func(*Connection, ...string)
+	mobile  bool
 }
 
 var infoCommand = &Command{
@@ -113,6 +116,52 @@ var broadcastCommand = &Command{
 	},
 }
 
+var gotoCommand = &Command{
+	name: "goto",
+	help: "moves to a different system, specified by either name or ID",
+	handler: func(conn *Connection, args ...string) {
+		dest_name := strings.Join(args, " ")
+		to, ok := nameIndex[dest_name]
+		if ok {
+			move(conn, to)
+			return
+		}
+
+		id_n, err := strconv.Atoi(dest_name)
+		if err != nil {
+			fmt.Fprintf(conn, `hmm, I don't know a system by the name "%s", try something else`, dest_name)
+			return
+		}
+
+		to, ok = index[id_n]
+		if !ok {
+			fmt.Fprintf(conn, `oh dear, there doesn't seem to be a system with id %d`, id_n)
+			return
+		}
+		move(conn, to)
+	},
+}
+
+func move(conn *Connection, to *System) {
+	start := conn.System()
+	start.Leave(conn)
+
+	delay := start.TimeTo(to)
+	delay = time.Duration(int64(float64(delay/time.Nanosecond) * 1.25))
+	After(delay, func() {
+		to.Arrive(conn)
+		fmt.Fprintf(conn, "You have arrived at the %s system.\n", to.name)
+	})
+}
+
+// var bombCommand = &Command{
+//     name: "bomb",
+//     help: "bombs a system, with a big space bomb",
+//     handler: func(conn *Connection, args ...string) {
+//
+//     },
+// }
+
 func isCommand(name string) bool {
 	_, ok := commandRegistry[name]
 	return ok
@@ -122,6 +171,11 @@ func runCommand(conn *Connection, name string, args ...string) {
 	cmd, ok := commandRegistry[name]
 	if !ok {
 		fmt.Fprintf(conn, "no such command: %s\n", name)
+		return
+	}
+
+	if conn.InTransit() && !cmd.mobile {
+		fmt.Fprintf(conn, "command %s can not be used while in transit", name)
 		return
 	}
 	cmd.handler(conn, args...)
@@ -138,4 +192,6 @@ func init() {
 	registerCommand(infoCommand)
 	registerCommand(nearbyCommand)
 	registerCommand(scanCommand)
+	registerCommand(gotoCommand)
+	// registerCommand(bombCommand)
 }

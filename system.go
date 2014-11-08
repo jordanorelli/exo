@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	index map[int]*System
+	index     map[int]*System
+	nameIndex map[string]*System
 )
 
 type System struct {
@@ -32,6 +33,7 @@ func (s *System) Arrive(p *Connection) {
 
 func (s *System) Leave(p *Connection) {
 	delete(s.players, p)
+	p.location = nil
 }
 
 func (s *System) EachConn(fn func(*Connection)) {
@@ -128,6 +130,7 @@ func indexSystems() map[int]*System {
 	}
 	defer rows.Close()
 	index = make(map[int]*System, 551)
+	nameIndex = make(map[string]*System, 551)
 	for rows.Next() {
 		p := System{}
 		if err := rows.Scan(&p.id, &p.name, &p.x, &p.y, &p.z, &p.planets); err != nil {
@@ -135,6 +138,7 @@ func indexSystems() map[int]*System {
 			continue
 		}
 		index[p.id] = &p
+		nameIndex[p.name] = &p
 	}
 	return index
 }

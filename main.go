@@ -60,6 +60,9 @@ func handleConnection(conn *Connection) {
 			log_error("failed to read line from player %s: %v", conn.PlayerName(), err)
 		}
 		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
 		parts := strings.Split(line, " ")
 		if isCommand(parts[0]) {
 			runCommand(conn, parts[0], parts[1:]...)

@@ -72,3 +72,7 @@ func (c *Connection) PlayerName() string {
 	}
 	return c.player.name
 }
+
+func (c *Connection) InTransit() bool {
+	return c.location == nil
+}
