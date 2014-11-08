@@ -150,19 +150,47 @@ func randomSystem() (*System, error) {
 	return planet, nil
 }
 
+type scanResults struct {
+	life bool
+}
+
+func (r *scanResults) negative() bool {
+	return !r.life
+}
+
+func (r *scanResults) String() string {
+	if r.negative() {
+		return "negative"
+	}
+	if r.life {
+		return "life detected"
+	}
+	return "(none)"
+}
+
 func scanSystem(id int, reply int) {
 	system := index[id]
 	source := index[reply]
 	delay := system.TimeTo(source)
 	log_info("scan hit %s from %s after traveling for %v", system.name, source.name, delay)
+
+	system.EachConn(func(conn *Connection) {
+		fmt.Fprintf(conn, "scan detected from %s\n", source.name)
+	})
+	results := &scanResults{
+		life: len(system.players) > 0,
+	}
 	After(delay, func() {
-		deliverReply(source.id, system.id)
+		deliverReply(source.id, system.id, results)
 	})
 }
 
-func deliverReply(id int, echo int) {
+func deliverReply(id int, echo int, results *scanResults) {
 	system := index[id]
 	source := index[echo]
 	delay := system.TimeTo(source)
 	log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
+	system.EachConn(func(conn *Connection) {
+		fmt.Fprintf(conn, "scan results from %s (%v away): %v\n", source.name, delay, results)
+	})
 }

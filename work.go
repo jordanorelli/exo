@@ -68,7 +68,6 @@ func RunQueue() {
 		if future.ts.After(time.Now()) {
 			time.Sleep(future.ts.Sub(time.Now()))
 		}
-		log_info("performing work")
 		future.work()
 	}
 }
