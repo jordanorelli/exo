@@ -69,6 +69,7 @@ another, it takes time for the light of your message to reach the other star
 systems.  Star systems that are farther away take longer to communicate with.
         `
 		msg = strings.TrimSpace(msg)
+		fmt.Fprintln(conn, msg)
 
 		if len(args) == 0 {
 			fmt.Fprintln(conn, `use the "commands" command for a list of commands.`)
@@ -171,6 +172,23 @@ var gotoCommand = &Command{
 	},
 }
 
+var mineCommand = &Command{
+	name: "mine",
+	help: "mines the current system for resources",
+	handler: func(conn *Connection, args ...string) {
+		conn.StartMining()
+		var fn func()
+		fn = func() {
+			if !conn.IsMining() {
+				return
+			}
+			conn.Payout()
+			After(500*time.Millisecond, fn)
+		}
+		After(500*time.Millisecond, fn)
+	},
+}
+
 func move(conn *Connection, to *System) {
 	start := conn.System()
 	start.Leave(conn)
@@ -255,6 +273,7 @@ func init() {
 	registerCommand(broadcastCommand)
 	registerCommand(commandsCommand)
 	registerCommand(gotoCommand)
+	registerCommand(mineCommand)
 	registerCommand(helpCommand)
 	registerCommand(infoCommand)
 	registerCommand(nearbyCommand)

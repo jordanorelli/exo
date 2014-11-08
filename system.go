@@ -14,12 +14,12 @@ var (
 )
 
 type System struct {
-	id      int
-	x, y, z float64
-	planets int
-	name    string
-
-	players map[*Connection]bool
+	id         int
+	x, y, z    float64
+	planets    int
+	name       string
+	players    map[*Connection]bool
+	miningRate float64
 }
 
 func (s *System) Arrive(p *Connection) {
@@ -165,6 +165,7 @@ func indexSystems() map[int]*System {
 		}
 		index[p.id] = &p
 		nameIndex[p.name] = &p
+		p.miningRate = rand.Float64()
 	}
 	return index
 }

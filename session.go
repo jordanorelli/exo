@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"net"
 	"strings"
 	"time"
@@ -19,6 +20,8 @@ type Connection struct {
 	lastBomb time.Time
 	kills    int
 	dead     bool
+	money    int64
+	mining   bool
 }
 
 func NewConnection(conn net.Conn) *Connection {
@@ -117,6 +120,27 @@ func (c *Connection) MadeKill(victim *Connection) {
 	if c.kills == 3 {
 		c.Win()
 	}
+}
+
+func (c *Connection) StartMining() {
+	fmt.Fprintf(c, "now mining %s with a payout rate of %v\n", c.System().name, c.System().miningRate)
+	fmt.Fprintln(c, "(press enter to stop mining)")
+	c.mining = true
+}
+
+func (c *Connection) StopMining() {
+	fmt.Fprintf(c, "done mining\n")
+	c.mining = false
+}
+
+func (c *Connection) IsMining() bool {
+	return c.mining
+}
+
+func (c *Connection) Payout() {
+	reward := int64(rand.NormFloat64()*5.0 + 100.0*c.System().miningRate)
+	c.money += reward
+	fmt.Fprintf(c, "mined: %d space duckets. total: %d\n", reward, c.money)
 }
 
 func (c *Connection) Win() {
