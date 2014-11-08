@@ -56,7 +56,7 @@ func RunQueue() {
 	heap.Init(&queue)
 	for {
 		if len(queue) == 0 {
-			time.Sleep(100 * time.Microsecond)
+			time.Sleep(10 * time.Microsecond)
 			continue
 		}
 		future, ok := heap.Pop(&queue).(*Future)
@@ -64,7 +64,6 @@ func RunQueue() {
 			log_error("there's shit on the work heap")
 			continue
 		}
-		log_info("we have a work item with delay %v", time.Since(future.ts))
 		if future.ts.After(time.Now()) {
 			time.Sleep(future.ts.Sub(time.Now()))
 		}

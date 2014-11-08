@@ -193,5 +193,6 @@ func init() {
 	registerCommand(nearbyCommand)
 	registerCommand(scanCommand)
 	registerCommand(gotoCommand)
+	registerCommand(broadcastCommand)
 	// registerCommand(bombCommand)
 }

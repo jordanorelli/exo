@@ -70,24 +70,6 @@ func handleConnection(conn *Connection) {
 		}
 
 		switch parts[0] {
-		case "broadcast":
-			msg := strings.Join(parts[1:], " ")
-			log_info("player %s is broadcasting message %s", conn.PlayerName(), msg)
-			for _, otherSystem := range index {
-				if otherSystem.name == system.name {
-					log_info("skpping duplicate system %s", system.name)
-					continue
-				}
-				go func(s *System) {
-					log_info("message reached system %s with %d inhabitants", s.name, s.NumInhabitants())
-					dist := system.DistanceTo(s) * 0.5
-					delay := time.Duration(int64(dist * 100000000))
-					time.Sleep(delay)
-					s.EachConn(func(conn *Connection) {
-						fmt.Fprintln(conn, msg)
-					})
-				}(otherSystem)
-			}
 		case "quit":
 			return
 		default:
