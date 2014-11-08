@@ -273,13 +273,13 @@ var bombCommand = &Command{
 
 var mkBombCommand = &Command{
 	name: "mkbomb",
-	help: "make a bomb.  Costs 800 space duckets",
+	help: "make a bomb.  Costs 500 space duckets",
 	handler: func(conn *Connection, args ...string) {
-		if conn.money < 800 {
-			fmt.Fprintf(conn, "not enough money!  Bombs cost 800 space duckets to build, you only have %d in the bank.\n", conn.money)
+		if conn.money < 500 {
+			fmt.Fprintf(conn, "not enough money!  Bombs cost 500 space duckets to build, you only have %d in the bank.\n", conn.money)
 			return
 		}
-		conn.Withdraw(800)
+		conn.Withdraw(500)
 		conn.bombs += 1
 		fmt.Fprintf(conn, "built a bomb!\n")
 		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)

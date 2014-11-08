@@ -95,6 +95,7 @@ func (c *Connection) InTransit() bool {
 }
 
 func (c *Connection) RecordScan() {
+	fmt.Fprintln(c, "scanning known systems for signs of life")
 	c.lastScan = time.Now()
 	After(1*time.Minute, func() {
 		fmt.Fprintln(c, "scanner ready")
@@ -103,7 +104,7 @@ func (c *Connection) RecordScan() {
 
 func (c *Connection) RecordBomb() {
 	c.lastBomb = time.Now()
-	After(1500*time.Millisecond, func() {
+	After(15*time.Second, func() {
 		fmt.Fprintln(c, "bomb arsenal reloaded")
 	})
 }
@@ -113,7 +114,7 @@ func (c *Connection) CanScan() bool {
 }
 
 func (c *Connection) CanBomb() bool {
-	return time.Since(c.lastBomb) > 1500*time.Millisecond
+	return time.Since(c.lastBomb) > 15*time.Second
 }
 
 func (c *Connection) NextScan() time.Duration {
@@ -121,7 +122,7 @@ func (c *Connection) NextScan() time.Duration {
 }
 
 func (c *Connection) NextBomb() time.Duration {
-	return -time.Since(c.lastBomb.Add(1500 * time.Millisecond))
+	return -time.Since(c.lastBomb.Add(15 * time.Second))
 }
 
 func (c *Connection) MadeKill(victim *Connection) {
@@ -174,19 +175,13 @@ func (c *Connection) Win() {
 }
 
 func (c *Connection) Die() {
-	fmt.Fprintf(c, "you were bombed.  You will respawn in 2 minutes.\n")
+	fmt.Fprintf(c, "you were bombed.  You will respawn in 1 minutes.\n")
 	c.dead = true
 	c.System().Leave(c)
 	After(30*time.Second, func() {
-		fmt.Fprintf(c, "respawn in 90 seconds.\n")
-	})
-	After(time.Minute, func() {
-		fmt.Fprintf(c, "respawn in 60 seconds.\n")
-	})
-	After(90*time.Second, func() {
 		fmt.Fprintf(c, "respawn in 30 seconds.\n")
 	})
-	After(2*time.Minute, c.Respawn)
+	After(time.Minute, c.Respawn)
 }
 
 func (c *Connection) Respawn() {
