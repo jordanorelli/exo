@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 type Connection struct {
@@ -12,6 +13,7 @@ type Connection struct {
 	*bufio.Reader
 	player   *Player
 	location *System
+	lastScan time.Time
 }
 
 func NewConnection(conn net.Conn) *Connection {
@@ -75,4 +77,16 @@ func (c *Connection) PlayerName() string {
 
 func (c *Connection) InTransit() bool {
 	return c.location == nil
+}
+
+func (c *Connection) RecordScan() {
+	c.lastScan = time.Now()
+}
+
+func (c *Connection) CanScan() bool {
+	return time.Since(c.lastScan) > 1*time.Minute
+}
+
+func (c *Connection) NextScan() time.Duration {
+	return -time.Since(c.lastScan.Add(time.Minute))
 }

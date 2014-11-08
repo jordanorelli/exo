@@ -81,6 +81,11 @@ var scanCommand = &Command{
 	name: "scan",
 	help: "super duper scan",
 	handler: func(conn *Connection, args ...string) {
+		if !conn.CanScan() {
+			fmt.Fprintf(conn, "scanners are still recharging.  Can scan again in %v\n", conn.NextScan())
+			return
+		}
+		conn.RecordScan()
 		system := conn.System()
 		log_info("scan sent from %s", system.name)
 		for id, _ := range index {
