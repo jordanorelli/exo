@@ -23,6 +23,8 @@ var infoCommand = &Command{
 	help: "gives you some info about your current position",
 	handler: func(conn *Connection, args ...string) {
 		fmt.Fprintf(conn, "current planet: %s\n", conn.System().name)
+		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)
+		fmt.Fprintf(conn, "money: %d space duckets\n", conn.money)
 	},
 }
 
@@ -236,6 +238,11 @@ var bombCommand = &Command{
 	name: "bomb",
 	help: "bombs a system, with a big space bomb",
 	handler: func(conn *Connection, args ...string) {
+		if conn.bombs < 1 {
+			fmt.Fprintf(conn, "no more bombs left! build more bombs!\n")
+			return
+		}
+
 		dest_name := strings.Join(args, " ")
 		to, ok := nameIndex[dest_name]
 		if ok {
@@ -262,7 +269,24 @@ var bombCommand = &Command{
 	},
 }
 
+var mkBombCommand = &Command{
+	name: "mkbomb",
+	help: "make a bomb.  Costs 800 space duckets",
+	handler: func(conn *Connection, args ...string) {
+		if conn.money < 800 {
+			fmt.Fprintf(conn, "not enough money!  Bombs cost 800 space duckets to build, you only have %d in the bank.\n", conn.money)
+			return
+		}
+		conn.money -= 800
+		conn.bombs += 1
+		fmt.Fprintf(conn, "built a bomb!\n")
+		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)
+		fmt.Fprintf(conn, "money: %d space duckets\n", conn.money)
+	},
+}
+
 func bomb(conn *Connection, to *System) {
+	conn.bombs -= 1
 	delay := conn.System().TimeTo(to)
 	delay = time.Duration(int64(float64(delay/time.Nanosecond) * 1.1))
 	After(delay, func() {

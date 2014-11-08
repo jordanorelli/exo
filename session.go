@@ -23,12 +23,14 @@ type Connection struct {
 	money    int64
 	mining   bool
 	colonies []*System
+	bombs    int
 }
 
 func NewConnection(conn net.Conn) *Connection {
 	c := &Connection{
 		Conn:   conn,
 		Reader: bufio.NewReader(conn),
+		bombs:  1,
 	}
 	connected[c] = true
 	return c

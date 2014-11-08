@@ -78,7 +78,10 @@ func (s *System) Bombed(bomber *Connection) {
 		conn.Die()
 		bomber.MadeKill(conn)
 	})
-	s.colonizedBy = nil
+	if s.colonizedBy != nil {
+		fmt.Fprintf(s.colonizedBy, "your mining colony on %s has been destroyed!\n", s.name)
+		s.colonizedBy = nil
+	}
 
 	for id, _ := range index {
 		if id == s.id {
