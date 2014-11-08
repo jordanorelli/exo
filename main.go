@@ -45,6 +45,7 @@ func handleConnection(conn *Connection) {
 		log_error("player %s failed to get random planet: %v", conn.PlayerName(), err)
 		return
 	}
+	planet.Arrive(conn)
 	if planet.planets == 1 {
 		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", planet.name, planet.planets)
 	} else {
@@ -68,8 +69,8 @@ func handleConnection(conn *Connection) {
 				if otherPlanet.name == planet.name {
 					continue
 				}
-				go func(p System) {
-					dist := planetDistance(*planet, p)
+				go func(p *System) {
+					dist := planetDistance(*planet, *p)
 					delay := time.Duration(int64(dist * 100000000))
 					time.Sleep(delay)
 					mu.Lock()
@@ -78,7 +79,23 @@ func handleConnection(conn *Connection) {
 				}(otherPlanet)
 			}
 		case "broadcast":
-
+			msg := strings.Join(parts[1:], " ")
+			log_info("player %s is broadcasting message %s", conn.PlayerName(), msg)
+			for _, otherSystem := range index {
+				if otherSystem.name == planet.name {
+					log_info("skpping duplicate system %s", planet.name)
+					continue
+				}
+				go func(s *System) {
+					log_info("message reached planet %s with %d inhabitants", s.name, s.NumInhabitants())
+					dist := planetDistance(*planet, *s) * 0.5
+					delay := time.Duration(int64(dist * 100000000))
+					time.Sleep(delay)
+					s.EachConn(func(conn *Connection) {
+						fmt.Fprintln(conn, msg)
+					})
+				}(otherSystem)
+			}
 		case "quit":
 			return
 		default:

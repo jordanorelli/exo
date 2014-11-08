@@ -8,13 +8,43 @@ import (
 )
 
 var (
-	index map[int]System
+	index map[int]*System
 )
 
 type System struct {
 	x, y, z float64
 	planets int
 	name    string
+
+	players map[*Connection]bool
+}
+
+func (s *System) Arrive(p *Connection) {
+	log_info("player %s has arrived at system %s", p.PlayerName(), s.name)
+	if s.players == nil {
+		s.players = make(map[*Connection]bool, 8)
+	}
+	s.players[p] = true
+}
+
+func (s *System) Leave(p *Connection) {
+	delete(s.players, p)
+}
+
+func (s *System) EachConn(fn func(*Connection)) {
+	if s.players == nil {
+		return
+	}
+	for conn, _ := range s.players {
+		fn(conn)
+	}
+}
+
+func (s *System) NumInhabitants() int {
+	if s.players == nil {
+		return 0
+	}
+	return len(s.players)
 }
 
 func (e System) Store(db *sql.DB) {
@@ -53,14 +83,14 @@ func planetDistance(p1, p2 System) float64 {
 	return dist3d(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
 }
 
-func indexPlanets(db *sql.DB) map[int]System {
+func indexPlanets(db *sql.DB) map[int]*System {
 	rows, err := db.Query(`select * from planets`)
 	if err != nil {
 		log_error("unable to select all planets: %v", err)
 		return nil
 	}
 	defer rows.Close()
-	index = make(map[int]System, 551)
+	index = make(map[int]*System, 551)
 	for rows.Next() {
 		var id int
 		p := System{}
@@ -68,7 +98,7 @@ func indexPlanets(db *sql.DB) map[int]System {
 			log_info("unable to scan planet row: %v", err)
 			continue
 		}
-		index[id] = p
+		index[id] = &p
 	}
 	return index
 }
@@ -81,5 +111,5 @@ func randomPlanet() (*System, error) {
 
 	pick := rand.Intn(n)
 	planet := index[pick]
-	return &planet, nil
+	return planet, nil
 }
