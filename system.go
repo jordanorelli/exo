@@ -14,12 +14,13 @@ var (
 )
 
 type System struct {
-	id         int
-	x, y, z    float64
-	planets    int
-	name       string
-	players    map[*Connection]bool
-	miningRate float64
+	id          int
+	x, y, z     float64
+	planets     int
+	name        string
+	players     map[*Connection]bool
+	miningRate  float64
+	colonizedBy *Connection
 }
 
 func (s *System) Arrive(p *Connection) {
@@ -182,7 +183,8 @@ func randomSystem() (*System, error) {
 }
 
 type scanResults struct {
-	life bool
+	life       bool
+	miningRate float64
 }
 
 func (r *scanResults) negative() bool {

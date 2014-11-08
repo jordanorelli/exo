@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
@@ -189,6 +190,36 @@ var mineCommand = &Command{
 	},
 }
 
+var colonizeCommand = &Command{
+	name: "colonize",
+	help: "establishes a mining colony on the current system",
+	handler: func(conn *Connection, arg ...string) {
+		system := conn.System()
+		var fn func()
+		fn = func() {
+			reward := int64(rand.NormFloat64()*5.0 + 100.0*system.miningRate)
+			system.colonizedBy.money += reward
+			fmt.Fprintf(system.colonizedBy, "mining colony on %s pays you %d space duckets. total: %d space duckets.\n", system.name, reward, system.colonizedBy.money)
+			After(5*time.Second, fn)
+		}
+
+		if system.colonizedBy != nil {
+			system.colonizedBy = conn
+			After(5*time.Second, fn)
+			return
+		}
+
+		if conn.money > 2000 {
+			conn.money -= 2000
+			system.colonizedBy = conn
+			fmt.Fprintf(conn, "set up a mining colony on %s\n", conn.System().name)
+			After(5*time.Second, fn)
+		} else {
+			fmt.Fprintf(conn, "not enough money!  it costs 2000 duckets to start a mining colony\n")
+		}
+	},
+}
+
 func move(conn *Connection, to *System) {
 	start := conn.System()
 	start.Leave(conn)
@@ -271,6 +302,7 @@ func init() {
 	commandRegistry = make(map[string]*Command, 16)
 	registerCommand(bombCommand)
 	registerCommand(broadcastCommand)
+	registerCommand(colonizeCommand)
 	registerCommand(commandsCommand)
 	registerCommand(gotoCommand)
 	registerCommand(mineCommand)

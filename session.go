@@ -22,6 +22,7 @@ type Connection struct {
 	dead     bool
 	money    int64
 	mining   bool
+	colonies []*System
 }
 
 func NewConnection(conn net.Conn) *Connection {
