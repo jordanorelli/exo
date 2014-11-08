@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 var commandRegistry map[string]*Command
@@ -87,6 +88,26 @@ var scanCommand = &Command{
 			id2 := id
 			After(delay, func() {
 				scanSystem(id2, system.id)
+			})
+		}
+	},
+}
+
+var broadcastCommand = &Command{
+	name: "broadcast",
+	help: "broadcast a message for all systems to hear",
+	handler: func(conn *Connection, args ...string) {
+		msg := strings.Join(args, " ")
+		system := conn.System()
+		log_info("broadcast sent from %s: %v\n", system.name, msg)
+		for id, _ := range index {
+			if id == system.id {
+				continue
+			}
+			delay := system.TimeTo(index[id])
+			id2 := id
+			After(delay, func() {
+				deliverMessage(id2, system.id, msg)
 			})
 		}
 	},

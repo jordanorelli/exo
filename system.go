@@ -194,3 +194,11 @@ func deliverReply(id int, echo int, results *scanResults) {
 		fmt.Fprintf(conn, "scan results from %s (%v away): %v\n", source.name, delay, results)
 	})
 }
+
+func deliverMessage(to_id, from_id int, msg string) {
+	to := index[to_id]
+	from := index[from_id]
+	to.EachConn(func(conn *Connection) {
+		fmt.Fprintf(conn, "Message from %s: %s", from.name, msg)
+	})
+}
