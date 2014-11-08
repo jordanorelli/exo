@@ -52,7 +52,8 @@ func (c *Connection) Login() {
 			if err := player.Create(); err != nil {
 
 			}
-			fmt.Fprintf(c, "godspeed, %s.\n", player.name)
+			fmt.Fprintf(c, "you look new around these parts, %s.\n", player.name)
+			fmt.Fprintf(c, `if you'd like a description of how to play, type the "help" command`)
 		} else {
 			c.player = player
 			fmt.Fprintf(c, "welcome back, %s.\n", player.name)

@@ -46,6 +46,30 @@ var helpCommand = &Command{
 	name: "help",
 	help: "helpful things to help you",
 	handler: func(conn *Connection, args ...string) {
+		msg := `
+Star Dragons is a stupid name, but it's the name that Brian suggested.  It has
+nothing to do with Dragons.
+
+Anyway, Star Dragons is a game of cunning text-based, real-time strategy.  You
+play as some kind of space-faring entity, faring space in your inspecific
+space-faring vessel.  If you want a big one, it's big; if you want a small one,
+it's small.  If you want a pink one, it's pink, if you want a black one, it's
+black.  And so on, and so forth.  It is the space craft of your dreams.  Or
+perhaps you are one of those insect-like alien races and you play as the queen.
+Yeah, that's the ticket!  You're the biggest baddest queen bug in space.
+
+In Star Dragons, you issue your spacecraft (which is *not* called a Dragon)
+textual commands to control it.  The objective of the game is to be the first
+person or alien or bug or magical space ponycorn to eradicate three enemy
+species.  Right now that is the only win condition.
+
+All of the systems present in Star Dragons are named and positioned after known
+exoplanet systems.  When attempting to communicate from one star system to
+another, it takes time for the light of your message to reach the other star
+systems.  Star systems that are farther away take longer to communicate with.
+        `
+		msg = strings.TrimSpace(msg)
+
 		if len(args) == 0 {
 			fmt.Fprintln(conn, `use the "commands" command for a list of commands.`)
 			fmt.Fprintln(conn, `use "help [command-name]" to get info for a specific command.`)
