@@ -291,6 +291,7 @@ func bomb(conn *Connection, to *System) {
 	conn.bombs -= 1
 	delay := conn.System().TimeTo(to)
 	delay = time.Duration(int64(float64(delay/time.Nanosecond) * 1.1))
+	fmt.Fprintf(conn, "sending bomb to %s. ETA: %v\n", to.name, delay)
 	After(delay, func() {
 		to.Bombed(conn)
 	})
