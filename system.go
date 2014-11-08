@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"time"
@@ -187,12 +188,13 @@ func randomSystem() (*System, error) {
 }
 
 type scanResults struct {
-	life       bool
-	miningRate float64
+	life        bool
+	miningRate  float64
+	colonizedBy *Connection
 }
 
 func (r *scanResults) negative() bool {
-	return !r.life
+	return !r.life && r.colonizedBy == nil
 }
 
 func (r *scanResults) String() string {
@@ -200,6 +202,15 @@ func (r *scanResults) String() string {
 		return "life detected"
 	}
 	return "(none)"
+}
+
+func (r *scanResults) write(w io.Writer) {
+	if r.life {
+		fmt.Fprintf(w, "\tlife detected\n")
+	}
+	if r.colonizedBy != nil {
+		fmt.Fprintf(w, "\tmining colony owned by %s\n", r.colonizedBy.PlayerName())
+	}
 }
 
 func scanSystem(id int, reply int) {
@@ -212,7 +223,8 @@ func scanSystem(id int, reply int) {
 		fmt.Fprintf(conn, "scan detected from %s\n", source.name)
 	})
 	results := &scanResults{
-		life: len(system.players) > 0,
+		life:        len(system.players) > 0,
+		colonizedBy: system.colonizedBy,
 	}
 	After(delay, func() {
 		deliverReply(source.id, system.id, results)
@@ -228,7 +240,8 @@ func deliverReply(id int, echo int, results *scanResults) {
 		if results.negative() {
 			return
 		}
-		fmt.Fprintf(conn, "scan results from %s (%v away): %v\n", source.name, delay, results)
+		fmt.Fprintf(conn, "scan results from %s (%v away):\n", source.name, delay)
+		results.write(conn)
 	})
 }
 

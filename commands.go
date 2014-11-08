@@ -200,8 +200,10 @@ var colonizeCommand = &Command{
 		var fn func()
 		fn = func() {
 			reward := int64(rand.NormFloat64()*5.0 + 100.0*system.miningRate)
-			system.colonizedBy.money += reward
-			fmt.Fprintf(system.colonizedBy, "mining colony on %s pays you %d space duckets. total: %d space duckets.\n", system.name, reward, system.colonizedBy.money)
+			if system.colonizedBy != nil {
+				system.colonizedBy.money += reward
+				fmt.Fprintf(system.colonizedBy, "mining colony on %s pays you %d space duckets. total: %d space duckets.\n", system.name, reward, system.colonizedBy.money)
+			}
 			After(5*time.Second, fn)
 		}
 
@@ -329,9 +331,10 @@ func init() {
 	registerCommand(colonizeCommand)
 	registerCommand(commandsCommand)
 	registerCommand(gotoCommand)
-	registerCommand(mineCommand)
 	registerCommand(helpCommand)
 	registerCommand(infoCommand)
+	registerCommand(mineCommand)
 	registerCommand(nearbyCommand)
 	registerCommand(scanCommand)
+	registerCommand(mkBombCommand)
 }
