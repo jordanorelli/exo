@@ -40,7 +40,7 @@ var nearbyCommand = &Command{
 		}
 		for _, neighbor := range neighbors {
 			other := index[neighbor.id]
-			fmt.Fprintf(conn, "%s: %v\n", other.name, neighbor.distance)
+			fmt.Fprintf(conn, "%-4d %-20s %v\n", other.id, other.name, system.TravelTimeTo(other))
 		}
 	},
 }
@@ -120,7 +120,7 @@ var scanCommand = &Command{
 			if id == system.id {
 				continue
 			}
-			delay := system.TimeTo(index[id])
+			delay := system.LightTimeTo(index[id])
 			id2 := id
 			After(delay, func() {
 				scanSystem(id2, system.id)
@@ -140,7 +140,7 @@ var broadcastCommand = &Command{
 			if id == system.id {
 				continue
 			}
-			delay := system.TimeTo(index[id])
+			delay := system.LightTimeTo(index[id])
 			id2 := id
 			After(delay, func() {
 				deliverMessage(id2, system.id, msg)
@@ -228,11 +228,11 @@ func move(conn *Connection, to *System) {
 	start := conn.System()
 	start.Leave(conn)
 
-	delay := start.TimeTo(to)
-	delay = time.Duration(int64(float64(delay/time.Nanosecond) * 1.25))
+	delay := start.TravelTimeTo(to)
+	fmt.Fprintf(conn, "moving to %s. ETA: %v\n", to.name, delay)
 	After(delay, func() {
 		to.Arrive(conn)
-		fmt.Fprintf(conn, "You have arrived at the %s system.\n", to.name)
+		fmt.Fprintf(conn, "You have arrived at the %s system after a total travel time of %v.\n", to.name, delay)
 	})
 }
 
@@ -289,8 +289,7 @@ var mkBombCommand = &Command{
 
 func bomb(conn *Connection, to *System) {
 	conn.bombs -= 1
-	delay := conn.System().TimeTo(to)
-	delay = time.Duration(int64(float64(delay/time.Nanosecond) * 1.1))
+	delay := conn.System().BombTimeTo(to)
 	fmt.Fprintf(conn, "sending bomb to %s. ETA: %v\n", to.name, delay)
 	After(delay, func() {
 		to.Bombed(conn)

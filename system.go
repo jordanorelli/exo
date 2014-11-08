@@ -70,8 +70,16 @@ func (s *System) DistanceTo(other *System) float64 {
 	return dist3d(s.x, s.y, s.z, other.x, other.y, other.z)
 }
 
-func (s *System) TimeTo(other *System) time.Duration {
+func (s *System) LightTimeTo(other *System) time.Duration {
 	return time.Duration(int64(s.DistanceTo(other) * 100000000))
+}
+
+func (s *System) BombTimeTo(other *System) time.Duration {
+	return time.Duration(int64(s.DistanceTo(other) * 110000000))
+}
+
+func (s *System) TravelTimeTo(other *System) time.Duration {
+	return time.Duration(int64(s.DistanceTo(other) * 125000000))
 }
 
 func (s *System) Bombed(bomber *Connection) {
@@ -88,7 +96,7 @@ func (s *System) Bombed(bomber *Connection) {
 		if id == s.id {
 			continue
 		}
-		delay := s.TimeTo(index[id])
+		delay := s.BombTimeTo(index[id])
 		id2 := id
 		After(delay, func() {
 			bombNotice(id2, s.id)
@@ -216,7 +224,7 @@ func (r *scanResults) write(w io.Writer) {
 func scanSystem(id int, reply int) {
 	system := index[id]
 	source := index[reply]
-	delay := system.TimeTo(source)
+	delay := system.LightTimeTo(source)
 	log_info("scan hit %s from %s after traveling for %v", system.name, source.name, delay)
 
 	system.EachConn(func(conn *Connection) {
@@ -234,7 +242,7 @@ func scanSystem(id int, reply int) {
 func deliverReply(id int, echo int, results *scanResults) {
 	system := index[id]
 	source := index[echo]
-	delay := system.TimeTo(source)
+	delay := system.LightTimeTo(source)
 	log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
 	system.EachConn(func(conn *Connection) {
 		if results.negative() {
