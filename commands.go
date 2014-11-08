@@ -159,13 +159,43 @@ func move(conn *Connection, to *System) {
 	})
 }
 
-// var bombCommand = &Command{
-//     name: "bomb",
-//     help: "bombs a system, with a big space bomb",
-//     handler: func(conn *Connection, args ...string) {
-//
-//     },
-// }
+var bombCommand = &Command{
+	name: "bomb",
+	help: "bombs a system, with a big space bomb",
+	handler: func(conn *Connection, args ...string) {
+		dest_name := strings.Join(args, " ")
+		to, ok := nameIndex[dest_name]
+		if ok {
+			bomb(conn, to)
+			return
+		}
+
+		id_n, err := strconv.Atoi(dest_name)
+		if err != nil {
+			fmt.Fprintf(conn, `hmm, I don't know a system by the name "%s", try something else\n`, dest_name)
+			return
+		}
+
+		to, ok = index[id_n]
+		if !ok {
+			fmt.Fprintf(conn, `oh dear, there doesn't seem to be a system with id %d\n`, id_n)
+			return
+		}
+		if !conn.CanBomb() {
+			fmt.Fprintf(conn, "weapons are still reloading.  Can bomb again in %v\n", conn.NextBomb())
+			return
+		}
+		bomb(conn, to)
+	},
+}
+
+func bomb(conn *Connection, to *System) {
+	delay := conn.System().TimeTo(to)
+	delay = time.Duration(int64(float64(delay/time.Nanosecond) * 1.1))
+	After(delay, func() {
+		to.Bombed(conn)
+	})
+}
 
 func isCommand(name string) bool {
 	_, ok := commandRegistry[name]
@@ -176,6 +206,11 @@ func runCommand(conn *Connection, name string, args ...string) {
 	cmd, ok := commandRegistry[name]
 	if !ok {
 		fmt.Fprintf(conn, "no such command: %s\n", name)
+		return
+	}
+
+	if conn.dead {
+		fmt.Fprintf(conn, "you're dead.\n")
 		return
 	}
 
@@ -192,12 +227,12 @@ func registerCommand(c *Command) {
 
 func init() {
 	commandRegistry = make(map[string]*Command, 16)
+	registerCommand(bombCommand)
+	registerCommand(broadcastCommand)
 	registerCommand(commandsCommand)
+	registerCommand(gotoCommand)
 	registerCommand(helpCommand)
 	registerCommand(infoCommand)
 	registerCommand(nearbyCommand)
 	registerCommand(scanCommand)
-	registerCommand(gotoCommand)
-	registerCommand(broadcastCommand)
-	// registerCommand(bombCommand)
 }

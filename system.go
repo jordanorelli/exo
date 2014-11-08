@@ -72,6 +72,32 @@ func (s *System) TimeTo(other *System) time.Duration {
 	return time.Duration(int64(s.DistanceTo(other) * 100000000))
 }
 
+func (s *System) Bombed(bomber *Connection) {
+	s.EachConn(func(conn *Connection) {
+		conn.Die()
+		bomber.MadeKill(conn)
+	})
+
+	for id, _ := range index {
+		if id == s.id {
+			continue
+		}
+		delay := s.TimeTo(index[id])
+		id2 := id
+		After(delay, func() {
+			bombNotice(id2, s.id)
+		})
+	}
+}
+
+func bombNotice(to_id, from_id int) {
+	to := index[to_id]
+	from := index[from_id]
+	to.EachConn(func(conn *Connection) {
+		fmt.Fprintf(conn, "a bombing has been observed on %s\n", from.name)
+	})
+}
+
 func (e System) String() string {
 	return fmt.Sprintf("<name: %s x: %v y: %v z: %v planets: %v>", e.name, e.x, e.y, e.z, e.planets)
 }
