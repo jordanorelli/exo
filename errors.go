@@ -7,6 +7,7 @@ import (
 const (
 	E_Ok int = iota
 	E_No_Data
+    E_No_DB
 )
 
 type errorGroup []error

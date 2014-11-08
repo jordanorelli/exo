@@ -27,9 +27,5 @@ func bail(status int, template string, args ...interface{}) {
 }
 
 func main() {
-    fi, err := os.Open(dataPath)
-    if err != nil {
-        bail(E_No_Data, "unable to open data path: %v", err)
-    }
-    speckStream(fi)
+    setupDb()
 }

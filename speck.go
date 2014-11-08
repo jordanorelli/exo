@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
 	"fmt"
 	"io"
 	"regexp"
@@ -9,7 +10,8 @@ import (
 	"strings"
 )
 
-func speckStream(r io.ReadCloser) {
+func speckStream(r io.ReadCloser, c chan exoSystem) {
+	defer close(c)
 	defer r.Close()
 	keep := regexp.MustCompile(`^\s*[\d-]`)
 
@@ -28,7 +30,9 @@ func speckStream(r io.ReadCloser) {
 		if !keep.Match(line) {
 			continue
 		}
-		parseSpeckLine(line)
+		planet := parseSpeckLine(line)
+        c <- *planet
+
 	}
 }
 
@@ -38,11 +42,31 @@ type exoSystem struct {
 	name    string
 }
 
-func (e exoSystem) String() string {
-    return fmt.Sprintf("<name: %s x: %v y: %v z: %v planets: %v>", e.name, e.x, e.y, e.z, e.planets)
+func (e exoSystem) Store(db *sql.DB) {
+	_, err := db.Exec(`
+    insert into planets
+    (name, x, y, z, planets)
+    values
+    (?, ?, ?, ?, ?)
+    ;`, e.name, e.x, e.y, e.z, e.planets)
+    if err != nil {
+        log_error("%v", err)
+    }
 }
 
-func parseSpeckLine(line []byte) {
+func countPlanets(db *sql.DB) (int, error) {
+    row := db.QueryRow(`select count(*) from planets`)
+
+    var n int
+    err := row.Scan(&n)
+    return n, err
+}
+
+func (e exoSystem) String() string {
+	return fmt.Sprintf("<name: %s x: %v y: %v z: %v planets: %v>", e.name, e.x, e.y, e.z, e.planets)
+}
+
+func parseSpeckLine(line []byte) *exoSystem {
 	parts := strings.Split(string(line), " ")
 	var err error
 	var g errorGroup
@@ -57,10 +81,10 @@ func parseSpeckLine(line []byte) {
 	s.planets, err = strconv.Atoi(parts[3])
 	g.AddError(err)
 
-    s.name = strings.TrimSpace(strings.Join(parts[7:], " "))
+	s.name = strings.TrimSpace(strings.Join(parts[7:], " "))
 
 	if g != nil {
 		log_error("%v", g)
 	}
-	log_info("%v", s)
+	return s
 }
