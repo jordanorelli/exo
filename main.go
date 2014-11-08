@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -35,8 +34,6 @@ func bail(status int, template string, args ...interface{}) {
 }
 
 func handleConnection(conn *Connection) {
-	var mu sync.Mutex
-
 	defer conn.Close()
 	conn.Login()
 
@@ -69,20 +66,6 @@ func handleConnection(conn *Connection) {
 		}
 
 		switch parts[0] {
-		case "scan":
-			for _, otherSystem := range index {
-				if otherSystem.name == system.name {
-					continue
-				}
-				go func(p *System) {
-					dist := system.DistanceTo(p)
-					delay := time.Duration(int64(dist * 100000000))
-					time.Sleep(delay)
-					mu.Lock()
-					fmt.Fprintf(conn, "PONG from system %s (%v)\n", p.name, delay)
-					mu.Unlock()
-				}(otherSystem)
-			}
 		case "broadcast":
 			msg := strings.Join(parts[1:], " ")
 			log_info("player %s is broadcasting message %s", conn.PlayerName(), msg)
@@ -101,18 +84,6 @@ func handleConnection(conn *Connection) {
 					})
 				}(otherSystem)
 			}
-		// case "nearby":
-		// 	neighbors, err := system.Nearby(25)
-		// 	fmt.Fprintf(conn, "fetching nearby star systems\n")
-		// 	if err != nil {
-		// 		log_error("%v", err)
-		// 		break
-		// 	}
-		// 	fmt.Fprintf(conn, "found %d nearby systems\n", len(neighbors))
-		// 	for _, neighbor := range neighbors {
-		// 		other := index[neighbor.id]
-		// 		fmt.Fprintf(conn, "%s: %v\n", other.name, neighbor.distance)
-		// 	}
 		case "quit":
 			return
 		default:
@@ -130,6 +101,7 @@ func main() {
 	if err != nil {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
+	go RunQueue()
 	for {
 		conn, err := listener.Accept()
 		if err != nil {

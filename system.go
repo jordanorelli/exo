@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 )
 
 var (
@@ -63,6 +64,10 @@ func (e System) Store(db *sql.DB) {
 
 func (s *System) DistanceTo(other *System) float64 {
 	return dist3d(s.x, s.y, s.z, other.x, other.y, other.z)
+}
+
+func (s *System) TimeTo(other *System) time.Duration {
+	return time.Duration(int64(s.DistanceTo(other) * 100000000))
 }
 
 func (e System) String() string {
@@ -143,4 +148,21 @@ func randomSystem() (*System, error) {
 	pick := rand.Intn(n)
 	planet := index[pick]
 	return planet, nil
+}
+
+func scanSystem(id int, reply int) {
+	system := index[id]
+	source := index[reply]
+	delay := system.TimeTo(source)
+	log_info("scan hit %s from %s after traveling for %v", system.name, source.name, delay)
+	After(delay, func() {
+		deliverReply(source.id, system.id)
+	})
+}
+
+func deliverReply(id int, echo int) {
+	system := index[id]
+	source := index[echo]
+	delay := system.TimeTo(source)
+	log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
 }

@@ -13,13 +13,6 @@ type Command struct {
 	handler func(*Connection, ...string)
 }
 
-// var scanCommand = &Command{
-// 	name: "scan",
-// 	help: "scans for resources",
-// 	handler: func(conn *Connection, args ...string) {
-// 	},
-// }
-
 var infoCommand = &Command{
 	name: "info",
 	help: "gives you some info about your current position",
@@ -80,18 +73,24 @@ var commandsCommand = &Command{
 	},
 }
 
-// var superscanCommand = &Command{
-// 	name: "super-scan",
-// 	help: "super duper scan",
-// 	handler: func(conn *Connection, args ...string) {
-// 		for id, _ := range index {
-//             if id == conn.System().id {
-//                 continue
-//             }
-//
-// 		}
-// 	},
-// }
+var scanCommand = &Command{
+	name: "scan",
+	help: "super duper scan",
+	handler: func(conn *Connection, args ...string) {
+		system := conn.System()
+		log_info("scan sent from %s", system.name)
+		for id, _ := range index {
+			if id == system.id {
+				continue
+			}
+			delay := system.TimeTo(index[id])
+			id2 := id
+			After(delay, func() {
+				scanSystem(id2, system.id)
+			})
+		}
+	},
+}
 
 func isCommand(name string) bool {
 	_, ok := commandRegistry[name]
@@ -117,4 +116,5 @@ func init() {
 	registerCommand(helpCommand)
 	registerCommand(infoCommand)
 	registerCommand(nearbyCommand)
+	registerCommand(scanCommand)
 }
