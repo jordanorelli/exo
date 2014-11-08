@@ -99,9 +99,12 @@ var commandsCommand = &Command{
 			names = append(names, name)
 		}
 		sort.Strings(names)
+		fmt.Fprintln(conn, "--------------------------------------------------------------------------------")
 		for _, name := range names {
-			fmt.Fprintln(conn, name)
+			cmd := commandRegistry[name]
+			fmt.Fprintf(conn, "%-16s %s\n", name, cmd.help)
 		}
+		fmt.Fprintln(conn, "--------------------------------------------------------------------------------")
 	},
 }
 
