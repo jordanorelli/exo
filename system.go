@@ -78,6 +78,7 @@ func (s *System) Bombed(bomber *Connection) {
 		conn.Die()
 		bomber.MadeKill(conn)
 	})
+	s.colonizedBy = nil
 
 	for id, _ := range index {
 		if id == s.id {
@@ -192,9 +193,6 @@ func (r *scanResults) negative() bool {
 }
 
 func (r *scanResults) String() string {
-	if r.negative() {
-		return "negative"
-	}
 	if r.life {
 		return "life detected"
 	}
@@ -224,6 +222,9 @@ func deliverReply(id int, echo int, results *scanResults) {
 	delay := system.TimeTo(source)
 	log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
 	system.EachConn(func(conn *Connection) {
+		if results.negative() {
+			return
+		}
 		fmt.Fprintf(conn, "scan results from %s (%v away): %v\n", source.name, delay, results)
 	})
 }
