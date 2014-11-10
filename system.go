@@ -248,7 +248,7 @@ func deliverReply(id int, echo int, results *scanResults) {
 		if results.negative() {
 			return
 		}
-		fmt.Fprintf(conn, "scan results from %s (%v away):\n", source.name, delay)
+		fmt.Fprintf(conn, "scan results from %s [id: %d] (%v away):\n", source.name, echo, delay)
 		results.write(conn)
 	})
 }
