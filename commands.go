@@ -235,7 +235,7 @@ var winCommand = &Command{
 	name: "win",
 	help: "win the game.",
 	handler: func(conn *Connection, args ...string) {
-		conn.Win()
+		conn.Win("win-command")
 	},
 }
 

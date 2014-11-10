@@ -5,6 +5,7 @@ import (
 )
 
 type Game struct {
+	id        Id
 	start     time.Time
 	end       time.Time
 	winner    string
@@ -13,7 +14,7 @@ type Game struct {
 
 func gamesTable() {
 	stmnt := `create table if not exists games (
-        id integer not null primary key autoincrement,
+        id text not null,
         start text not null,
         end text,
         winner text,
@@ -26,6 +27,7 @@ func gamesTable() {
 
 func NewGame() *Game {
 	game := &Game{
+		id:    NewId(),
 		start: time.Now(),
 	}
 	if err := game.Create(); err != nil {
@@ -37,9 +39,9 @@ func NewGame() *Game {
 func (g *Game) Create() error {
 	_, err := db.Exec(`
         insert into games
-        (start)
+        (id, start)
         values
-        (?)
-    ;`, g.start)
+        (?, ?)
+    ;`, g.id.String(), g.start)
 	return err
 }

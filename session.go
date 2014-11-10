@@ -128,7 +128,7 @@ func (c *Connection) NextBomb() time.Duration {
 func (c *Connection) MadeKill(victim *Connection) {
 	c.kills += 1
 	if c.kills == 3 {
-		c.Win()
+		c.Win("military")
 	}
 }
 
@@ -163,11 +163,11 @@ func (c *Connection) Withdraw(n int64) {
 func (c *Connection) Deposit(n int64) {
 	c.money += n
 	if c.money >= 25000 {
-		c.Win()
+		c.Win("economic")
 	}
 }
 
-func (c *Connection) Win() {
+func (c *Connection) Win(method string) {
 	for conn, _ := range connected {
 		fmt.Fprintf(conn, "player %s has won.\n", c.PlayerName())
 		conn.Close()
