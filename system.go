@@ -24,13 +24,18 @@ type System struct {
 	colonizedBy *Connection
 }
 
-func (s *System) Arrive(p *Connection) {
-	p.SetSystem(s)
-	log_info("player %s has arrived at system %s", p.PlayerName(), s.name)
+func (s *System) Arrive(conn *Connection) {
+	conn.SetSystem(s)
+	log_info("player %s has arrived at system %s", conn.PlayerName(), s.name)
 	if s.players == nil {
 		s.players = make(map[*Connection]bool, 8)
 	}
-	s.players[p] = true
+	s.players[conn] = true
+	if s.planets == 1 {
+		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", s.name, s.planets)
+	} else {
+		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", s.name, s.planets)
+	}
 }
 
 func (s *System) Leave(p *Connection) {

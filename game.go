@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
 type Game struct {
-	id        Id
-	start     time.Time
-	end       time.Time
-	winner    string
-	winMethod string
+	id          Id
+	start       time.Time
+	end         time.Time
+	winner      string
+	winMethod   string
+	connections map[*Connection]bool
 }
 
 func gamesTable() {
@@ -27,8 +29,9 @@ func gamesTable() {
 
 func NewGame() *Game {
 	game := &Game{
-		id:    NewId(),
-		start: time.Now(),
+		id:          NewId(),
+		start:       time.Now(),
+		connections: make(map[*Connection]bool, 32),
 	}
 	if err := game.Create(); err != nil {
 		log_error("%v", err)
@@ -44,4 +47,49 @@ func (g *Game) Create() error {
         (?, ?)
     ;`, g.id.String(), g.start)
 	return err
+}
+
+func (g *Game) Store() error {
+	_, err := db.Exec(`
+        update games
+        set end = ?, winner = ?, win_method = ?
+        where id = ?
+    ;`, g.end, g.winner, g.winMethod, g.id)
+	return err
+}
+
+func (g *Game) Join(conn *Connection) {
+	g.connections[conn] = true
+}
+
+func (g *Game) Quit(conn *Connection) {
+	delete(g.connections, conn)
+}
+
+func (g *Game) Win(winner *Connection, method string) {
+	g.end = time.Now()
+	g.winner = winner.PlayerName()
+	g.winMethod = method
+	g.Store()
+
+	for conn, _ := range g.connections {
+		fmt.Fprintf(conn, "player %s has won by %s victory.\n", winner.PlayerName(), method)
+		fmt.Fprintf(conn, "starting new game ...\n")
+		conn.Reset()
+	}
+
+	ResetQueue()
+
+	g.Reset()
+
+	for conn, _ := range g.connections {
+		conn.Respawn()
+	}
+}
+
+func (g *Game) Reset() {
+	connections := g.connections
+	fresh := NewGame()
+	*g = *fresh
+	g.connections = connections
 }

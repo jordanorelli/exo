@@ -39,17 +39,7 @@ func handleConnection(conn *Connection) {
 	defer conn.Close()
 	conn.Login()
 
-	system, err := randomSystem()
-	if err != nil {
-		log_error("player %s failed to get random system: %v", conn.PlayerName(), err)
-		return
-	}
-	system.Arrive(conn)
-	if system.planets == 1 {
-		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", system.name, system.planets)
-	} else {
-		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", system.name, system.planets)
-	}
+	conn.Respawn()
 	for {
 		line, err := conn.ReadString('\n')
 		switch err {

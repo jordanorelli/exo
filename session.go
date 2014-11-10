@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-var connected = make(map[*Connection]bool, 32)
-
 type Connection struct {
 	net.Conn
 	*bufio.Reader
@@ -32,8 +30,17 @@ func NewConnection(conn net.Conn) *Connection {
 		Reader: bufio.NewReader(conn),
 		bombs:  1,
 	}
-	connected[c] = true
+	currentGame.Join(c)
 	return c
+}
+
+func (conn *Connection) Reset() {
+	*conn = Connection{
+		Conn:   conn.Conn,
+		Reader: bufio.NewReader(conn.Conn),
+		bombs:  1,
+	}
+	currentGame.Join(conn)
 }
 
 func (c *Connection) Login() {
@@ -79,8 +86,11 @@ func (c *Connection) System() *System {
 
 func (c *Connection) Close() error {
 	log_info("player disconnecting: %s", c.PlayerName())
-	delete(connected, c)
-	return c.Conn.Close()
+	currentGame.Quit(c)
+	if c.Conn != nil {
+		return c.Conn.Close()
+	}
+	return nil
 }
 
 func (c *Connection) PlayerName() string {
@@ -168,10 +178,7 @@ func (c *Connection) Deposit(n int64) {
 }
 
 func (c *Connection) Win(method string) {
-	for conn, _ := range connected {
-		fmt.Fprintf(conn, "player %s has won.\n", c.PlayerName())
-		conn.Close()
-	}
+	currentGame.Win(c, method)
 }
 
 func (c *Connection) Die() {

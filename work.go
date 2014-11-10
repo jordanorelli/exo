@@ -2,10 +2,14 @@ package main
 
 import (
 	"container/heap"
+	"sync"
 	"time"
 )
 
-var queue = make(Queue, 0, 32)
+var (
+	queue     = make(Queue, 0, 32)
+	queueLock sync.Mutex
+)
 
 type Future struct {
 	ts    time.Time
@@ -59,7 +63,9 @@ func RunQueue() {
 			time.Sleep(10 * time.Microsecond)
 			continue
 		}
+		queueLock.Lock()
 		future, ok := heap.Pop(&queue).(*Future)
+		queueLock.Unlock()
 		if !ok {
 			log_error("there's shit on the work heap")
 			continue
@@ -69,4 +75,13 @@ func RunQueue() {
 		}
 		future.work()
 	}
+}
+
+func ResetQueue() {
+	queueLock.Lock()
+	defer queueLock.Unlock()
+
+	log_info("Reseting worker queue.")
+	queue = make(Queue, 0, 32)
+	heap.Init(&queue)
 }
