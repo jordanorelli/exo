@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	dataPath  = "/projects/exo/expl.speck"
-	info_log  *log.Logger
-	error_log *log.Logger
+	dataPath    = "/projects/exo/expl.speck"
+	info_log    *log.Logger
+	error_log   *log.Logger
+	currentGame *Game
 )
 
 func log_error(template string, args ...interface{}) {
@@ -97,6 +98,9 @@ func main() {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
 	go RunQueue()
+
+	currentGame = NewGame()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
