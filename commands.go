@@ -329,7 +329,7 @@ func runCommand(conn *Connection, name string, args ...string) {
 	}
 
 	if conn.InTransit() && !cmd.mobile {
-		fmt.Fprintf(conn, "command %s can not be used while in transit", name)
+		fmt.Fprintf(conn, "command %s can not be used while in transit\n", name)
 		return
 	}
 	cmd.handler(conn, args...)
