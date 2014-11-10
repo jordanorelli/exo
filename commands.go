@@ -231,6 +231,14 @@ var colonizeCommand = &Command{
 	},
 }
 
+var winCommand = &Command{
+	name: "win",
+	help: "win the game.",
+	handler: func(conn *Connection, args ...string) {
+		conn.Win()
+	},
+}
+
 func move(conn *Connection, to *System) {
 	start := conn.System()
 	start.Leave(conn)
@@ -344,4 +352,5 @@ func init() {
 	registerCommand(nearbyCommand)
 	registerCommand(scanCommand)
 	registerCommand(mkBombCommand)
+	registerCommand(winCommand)
 }

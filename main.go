@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	dataPath  = "/projects/exo/expl.speck"
-	info_log  *log.Logger
-	error_log *log.Logger
+	dataPath    = "/projects/exo/expl.speck"
+	info_log    *log.Logger
+	error_log   *log.Logger
+	currentGame *Game
 )
 
 func log_error(template string, args ...interface{}) {
@@ -49,7 +50,6 @@ func handleConnection(conn *Connection) {
 	} else {
 		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", system.name, system.planets)
 	}
-READING:
 	for {
 		line, err := conn.ReadString('\n')
 		switch err {
@@ -59,8 +59,7 @@ READING:
 			break
 		default:
 			log_error("failed to read line from player %s: %v", conn.PlayerName(), err)
-			time.Sleep(time.Second)
-			continue READING
+			return
 		}
 		line = strings.TrimSpace(line)
 
@@ -99,6 +98,9 @@ func main() {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
 	go RunQueue()
+
+	currentGame = NewGame()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
