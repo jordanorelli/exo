@@ -49,7 +49,6 @@ func handleConnection(conn *Connection) {
 	} else {
 		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", system.name, system.planets)
 	}
-READING:
 	for {
 		line, err := conn.ReadString('\n')
 		switch err {
@@ -59,8 +58,7 @@ READING:
 			break
 		default:
 			log_error("failed to read line from player %s: %v", conn.PlayerName(), err)
-			time.Sleep(time.Second)
-			continue READING
+			return
 		}
 		line = strings.TrimSpace(line)
 
