@@ -46,7 +46,10 @@ func (g *Game) Create() error {
         values
         (?, ?)
     ;`, g.id.String(), g.start)
-	return err
+	if err != nil {
+		return fmt.Errorf("error writing sqlite insert statement to create game: %v")
+	}
+	return nil
 }
 
 func (g *Game) Store() error {
