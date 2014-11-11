@@ -34,7 +34,7 @@ func NewGame() *Game {
 		connections: make(map[*Connection]bool, 32),
 	}
 	if err := game.Create(); err != nil {
-		log_error("%v", err)
+		log_error("unable to create game: %v", err)
 	}
 	return game
 }

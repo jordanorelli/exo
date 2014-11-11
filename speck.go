@@ -52,7 +52,7 @@ func parseSpeckLine(line []byte) *System {
 	s.name = strings.TrimSpace(strings.Join(parts[7:], " "))
 
 	if g != nil {
-		log_error("%v", g)
+		log_error("unable to parse speck line: %v", g)
 	}
 	return s
 }

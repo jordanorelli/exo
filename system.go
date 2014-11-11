@@ -67,7 +67,7 @@ func (e System) Store(db *sql.DB) {
     (?, ?, ?, ?, ?)
     ;`, e.name, e.x, e.y, e.z, e.planets)
 	if err != nil {
-		log_error("%v", err)
+		log_error("unable to store system: %v", err)
 	}
 }
 
