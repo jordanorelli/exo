@@ -12,6 +12,8 @@ type Game struct {
 	winner      string
 	winMethod   string
 	connections map[*Connection]bool
+	frame       int64
+	elems       map[GameElement]bool
 }
 
 func gamesTable() {
@@ -32,6 +34,7 @@ func NewGame() *Game {
 		id:          NewId(),
 		start:       time.Now(),
 		connections: make(map[*Connection]bool, 32),
+		elems:       make(map[GameElement]bool, 32),
 	}
 	if err := game.Create(); err != nil {
 		log_error("unable to create game: %v", err)
@@ -95,4 +98,41 @@ func (g *Game) Reset() {
 	fresh := NewGame()
 	*g = *fresh
 	g.connections = connections
+}
+
+func (g *Game) Run() {
+	ticker := time.Tick(time.Second / time.Duration(frameRate))
+	for {
+		select {
+		case <-ticker:
+			g.tick()
+		}
+	}
+}
+
+func (g *Game) Register(elem GameElement) {
+	g.elems[elem] = true
+}
+
+func (g *Game) tick() {
+	g.frame += 1
+	for elem := range g.elems {
+		if elem.Dead() {
+			delete(g.elems, elem)
+		}
+	}
+	for elem := range g.elems {
+		elem.Tick(g.frame)
+	}
+}
+
+type GameElement interface {
+	Tick(frame int64)
+	Dead() Mortality
+}
+
+type Mortality bool
+
+func (m Mortality) Dead() Mortality {
+	return m
 }

@@ -22,6 +22,7 @@ type System struct {
 	players     map[*Connection]bool
 	miningRate  float64
 	colonizedBy *Connection
+	distances   []Ray
 }
 
 func (s *System) Arrive(conn *Connection) {
@@ -85,6 +86,42 @@ func (s *System) BombTimeTo(other *System) time.Duration {
 
 func (s *System) TravelTimeTo(other *System) time.Duration {
 	return time.Duration(int64(s.DistanceTo(other) * 125000000))
+}
+
+type Ray struct {
+	s    *System
+	dist float64 // distance in parsecs
+}
+
+func (s *System) Distances() []Ray {
+	if s.distances == nil {
+		s.distances = make([]Ray, 0, 551)
+		rows, err := db.Query(`
+            select edges.id_2, edges.distance
+            from edges
+            where edges.id_1 = ?
+            order by distance
+        ;`, s.id)
+		if err != nil {
+			log_error("unable to query for system distances: %v", err)
+			return nil
+		}
+		for rows.Next() {
+			var (
+				r    Ray
+				id   int
+				dist float64
+			)
+			if err := rows.Scan(&id, &dist); err != nil {
+				log_error("unable to unpack Ray from sql result: %v", err)
+				continue
+			}
+			r.s = index[id]
+			r.dist = dist
+			s.distances = append(s.distances, r)
+		}
+	}
+	return s.distances
 }
 
 func (s *System) Bombed(bomber *Connection) {
@@ -230,7 +267,7 @@ func scanSystem(id int, reply int) {
 	system := index[id]
 	source := index[reply]
 	delay := system.LightTimeTo(source)
-	log_info("scan hit %s from %s after traveling for %v", system.name, source.name, delay)
+	// log_info("scan hit %s from %s after traveling for %v", system.name, source.name, delay)
 
 	system.EachConn(func(conn *Connection) {
 		fmt.Fprintf(conn, "scan detected from %s\n", source.name)
@@ -248,7 +285,7 @@ func deliverReply(id int, echo int, results *scanResults) {
 	system := index[id]
 	source := index[echo]
 	delay := system.LightTimeTo(source)
-	log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
+	// log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
 	system.EachConn(func(conn *Connection) {
 		if results.negative() {
 			return

@@ -16,6 +16,8 @@ var (
 	info_log    *log.Logger
 	error_log   *log.Logger
 	currentGame *Game
+	frameRate   = 100  // frames/second
+	lightSpeed  = 0.01 // parsecs/frame
 )
 
 func log_error(template string, args ...interface{}) {
@@ -90,6 +92,7 @@ func main() {
 	go RunQueue()
 
 	currentGame = NewGame()
+	go currentGame.Run()
 
 	for {
 		conn, err := listener.Accept()

@@ -120,6 +120,9 @@ var scanCommand = &Command{
 			fmt.Fprintf(conn, "scanners are still recharging.  Can scan again in %v\n", conn.NextScan())
 			return
 		}
+		s := &scan{start: time.Now(), origin: conn.System()}
+		currentGame.Register(s)
+
 		conn.RecordScan()
 		system := conn.System()
 		log_info("scan sent from %s", system.name)
