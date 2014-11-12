@@ -131,17 +131,9 @@ var broadcastCommand = &Command{
 	handler: func(conn *Connection, args ...string) {
 		msg := strings.Join(args, " ")
 		system := conn.System()
-		log_info("broadcast sent from %s: %v\n", system.name, msg)
-		for id, _ := range index {
-			if id == system.id {
-				continue
-			}
-			delay := system.LightTimeTo(index[id])
-			id2 := id
-			After(delay, func() {
-				deliverMessage(id2, system.id, msg)
-			})
-		}
+		b := NewBroadcast(system, msg)
+		log_info("player %s send broadcast from system %s: %v\n", conn.PlayerName(), system.Label(), msg)
+		currentGame.Register(b)
 	},
 }
 
