@@ -44,6 +44,12 @@ func (s *System) Leave(p *Connection) {
 	p.location = nil
 }
 
+func (s *System) NotifyInhabitants(template string, args ...interface{}) {
+	s.EachConn(func(conn *Connection) {
+		fmt.Fprintf(conn, template, args...)
+	})
+}
+
 func (s *System) EachConn(fn func(*Connection)) {
 	if s.players == nil {
 		return
@@ -152,6 +158,11 @@ func bombNotice(to_id, from_id int) {
 	to.EachConn(func(conn *Connection) {
 		fmt.Fprintf(conn, "a bombing has been observed on %s\n", from.name)
 	})
+}
+
+// for players to read.
+func (s System) Label() string {
+	return fmt.Sprintf("%s (id: %v)", s.name, s.id)
 }
 
 func (e System) String() string {

@@ -21,6 +21,21 @@ type scanResult struct {
 	colonizedBy *Connection
 }
 
+func (r *scanResult) Empty() bool {
+	return r.players == nil && r.colonizedBy == nil
+}
+
+func (r *scanResult) playerNames() []string {
+	if r.players == nil {
+		return nil
+	}
+	names := make([]string, 0, len(r.players))
+	for conn := range r.players {
+		names = append(names, conn.PlayerName())
+	}
+	return names
+}
+
 func NewScan(origin *System) *scan {
 	return &scan{
 		origin:  origin,
@@ -30,7 +45,7 @@ func NewScan(origin *System) *scan {
 }
 
 func (s *scan) Tick(frame int64) {
-	s.dist += lightSpeed
+	s.dist += options.lightSpeed
 	s.hits()
 	s.echos()
 }
@@ -55,6 +70,7 @@ func (s *scan) hits() {
 }
 
 func (s *scan) hitSystem(sys *System, dist float64) scanResult {
+	sys.NotifyInhabitants("scan detected from %s\n", s.origin.Label())
 	r := scanResult{
 		system:      sys,
 		colonizedBy: sys.colonizedBy,
@@ -76,5 +92,17 @@ func (s *scan) echos() {
 			break
 		}
 		log_info("echo from %v reached origin %v after %v", res.system.name, s.origin.name, time.Since(s.start))
+		if res.Empty() {
+			continue
+		}
+		s.origin.NotifyInhabitants("results from scan of %s:\n", res.system.Label())
+		s.origin.NotifyInhabitants("\tdistance: %v\n", s.origin.DistanceTo(res.system))
+		inhabitants := res.playerNames()
+		if inhabitants != nil {
+			s.origin.NotifyInhabitants("\tinhabitants: %v\n", inhabitants)
+		}
+		if res.colonizedBy != nil {
+			s.origin.NotifyInhabitants("\tcolonized by: %v\n", res.colonizedBy.PlayerName())
+		}
 	}
 }

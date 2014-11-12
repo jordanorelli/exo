@@ -122,18 +122,6 @@ var scanCommand = &Command{
 		}
 		currentGame.Register(NewScan(conn.System()))
 		conn.RecordScan()
-		system := conn.System()
-		log_info("scan sent from %s", system.name)
-		for id, _ := range index {
-			if id == system.id {
-				continue
-			}
-			delay := system.LightTimeTo(index[id])
-			id2 := id
-			After(delay, func() {
-				scanSystem(id2, system.id)
-			})
-		}
 	},
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -11,13 +12,16 @@ import (
 	"time"
 )
 
+var options struct {
+	lightSpeed float64
+	frameRate  int
+}
+
 var (
 	dataPath    = "/projects/exo/expl.speck"
 	info_log    *log.Logger
 	error_log   *log.Logger
 	currentGame *Game
-	frameRate   = 100  // frames/second
-	lightSpeed  = 0.01 // parsecs/frame
 )
 
 func log_error(template string, args ...interface{}) {
@@ -79,6 +83,7 @@ func handleConnection(conn *Connection) {
 }
 
 func main() {
+	flag.Parse()
 	dbconnect()
 	rand.Seed(time.Now().UnixNano())
 	info_log = log.New(os.Stdout, "[INFO] ", 0)
@@ -102,4 +107,9 @@ func main() {
 		}
 		go handleConnection(NewConnection(conn))
 	}
+}
+
+func init() {
+	flag.Float64Var(&options.lightSpeed, "light-speed", 0.01, "speed of light in parsecs per frame")
+	flag.IntVar(&options.frameRate, "frame-rate", 100, "frame rate, in frames per second")
 }

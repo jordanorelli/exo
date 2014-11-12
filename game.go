@@ -101,7 +101,7 @@ func (g *Game) Reset() {
 }
 
 func (g *Game) Run() {
-	ticker := time.Tick(time.Second / time.Duration(frameRate))
+	ticker := time.Tick(time.Second / time.Duration(options.frameRate))
 	for {
 		select {
 		case <-ticker:
