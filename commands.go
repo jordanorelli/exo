@@ -144,7 +144,7 @@ var gotoCommand = &Command{
 		dest_name := strings.Join(args, " ")
 		to, ok := nameIndex[dest_name]
 		if ok {
-			move(conn, to)
+			conn.TravelTo(to)
 			return
 		}
 
@@ -159,7 +159,7 @@ var gotoCommand = &Command{
 			fmt.Fprintf(conn, `oh dear, there doesn't seem to be a system with id %d`, id_n)
 			return
 		}
-		move(conn, to)
+		conn.TravelTo(to)
 	},
 }
 
@@ -187,7 +187,7 @@ var colonizeCommand = &Command{
 		system := conn.System()
 		var fn func()
 		fn = func() {
-			reward := int64(rand.NormFloat64()*5.0 + 100.0*system.miningRate)
+			reward := int(rand.NormFloat64()*5.0 + 100.0*system.miningRate)
 			if system.colonizedBy != nil {
 				system.colonizedBy.Deposit(reward)
 				fmt.Fprintf(system.colonizedBy, "mining colony on %s pays you %d space duckets. total: %d space duckets.\n", system.name, reward, system.colonizedBy.money)
@@ -218,18 +218,6 @@ var winCommand = &Command{
 	handler: func(conn *Connection, args ...string) {
 		conn.Win("win-command")
 	},
-}
-
-func move(conn *Connection, to *System) {
-	start := conn.System()
-	start.Leave(conn)
-
-	delay := start.TravelTimeTo(to)
-	fmt.Fprintf(conn, "moving to %s. ETA: %v\n", to.name, delay)
-	After(delay, func() {
-		to.Arrive(conn)
-		fmt.Fprintf(conn, "You have arrived at the %s system after a total travel time of %v.\n", to.name, delay)
-	})
 }
 
 var bombCommand = &Command{

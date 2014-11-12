@@ -13,8 +13,10 @@ import (
 )
 
 var options struct {
-	lightSpeed float64
-	frameRate  int
+	lightSpeed  float64
+	frameRate   int
+	miningRate  int
+	playerSpeed float64
 }
 
 var (
@@ -112,4 +114,6 @@ func main() {
 func init() {
 	flag.Float64Var(&options.lightSpeed, "light-speed", 0.01, "speed of light in parsecs per frame")
 	flag.IntVar(&options.frameRate, "frame-rate", 100, "frame rate, in frames per second")
+	flag.IntVar(&options.miningRate, "mining-rate", 1, "mining rate, in duckets per frame")
+	flag.Float64Var(&options.playerSpeed, "player-speed", 0.8, "player travel speed, relative to C, the speed of light")
 }

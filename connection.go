@@ -12,17 +12,29 @@ import (
 type Connection struct {
 	net.Conn
 	*bufio.Reader
-	player   *Player
-	location *System
-	lastScan time.Time
-	lastBomb time.Time
-	kills    int
-	dead     bool
-	money    int64
-	mining   bool
-	colonies []*System
-	bombs    int
+	player          *Player
+	location        *System
+	dest            *System
+	travelRemaining int64
+	lastScan        time.Time
+	lastBomb        time.Time
+	kills           int
+	dead            bool
+	money           int
+	mining          bool
+	colonies        []*System
+	bombs           int
+	state           PlayerState // this is wrong...
 }
+
+type PlayerState int
+
+const (
+	idle PlayerState = iota
+	dead
+	inTransit
+	mining
+)
 
 func NewConnection(conn net.Conn) *Connection {
 	c := &Connection{
@@ -74,7 +86,45 @@ func (c *Connection) Login() {
 		}
 		break
 	}
+	currentGame.Register(c)
+}
 
+func (c *Connection) Dead() bool {
+	return false
+}
+
+func (c *Connection) Tick(frame int64) {
+	// fuck
+	switch c.state {
+	case idle:
+	case dead:
+	case inTransit:
+		c.travelRemaining -= 1
+		log_info("player %s has remaining travel: %v", c.PlayerName(), c.travelRemaining)
+		if c.travelRemaining == 0 {
+			c.land()
+		}
+	case mining:
+		c.money += options.miningRate
+	default:
+		log_error("connection %v has invalid state wtf", c)
+	}
+}
+
+func (c *Connection) TravelTo(dest *System) {
+	fmt.Fprintf(c, "traveling to: %s\n", dest.Label())
+	dist := c.System().DistanceTo(dest)
+	c.travelRemaining = int64(dist / (options.lightSpeed * options.playerSpeed))
+	c.location = nil
+	c.dest = dest
+	c.state = inTransit // fuck everything about this
+}
+
+func (c *Connection) land() {
+	fmt.Fprintf(c, "you have arrived at %v\n", c.dest.Label())
+	c.location = c.dest
+	c.dest = nil
+	c.state = idle
 }
 
 func (c *Connection) SetSystem(s *System) {
@@ -162,16 +212,16 @@ func (c *Connection) Payout() {
 	if c.dead {
 		return
 	}
-	reward := int64(rand.NormFloat64()*5.0 + 100.0*c.System().miningRate)
+	reward := int(rand.NormFloat64()*5.0 + 100.0*c.System().miningRate)
 	c.Deposit(reward)
 	fmt.Fprintf(c, "mined: %d space duckets. total: %d\n", reward, c.money)
 }
 
-func (c *Connection) Withdraw(n int64) {
+func (c *Connection) Withdraw(n int) {
 	c.money -= n
 }
 
-func (c *Connection) Deposit(n int64) {
+func (c *Connection) Deposit(n int) {
 	c.money += n
 	if c.money >= 25000 {
 		c.Win("economic")
