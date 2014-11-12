@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"io"
 	"math"
 	"math/rand"
 	"time"
@@ -246,64 +245,6 @@ func randomSystem() (*System, error) {
 	pick := rand.Intn(n)
 	planet := index[pick]
 	return planet, nil
-}
-
-type scanResults struct {
-	life        bool
-	miningRate  float64
-	colonizedBy *Connection
-}
-
-func (r *scanResults) negative() bool {
-	return !r.life && r.colonizedBy == nil
-}
-
-func (r *scanResults) String() string {
-	if r.life {
-		return "life detected"
-	}
-	return "(none)"
-}
-
-func (r *scanResults) write(w io.Writer) {
-	if r.life {
-		fmt.Fprintf(w, "\tlife detected\n")
-	}
-	if r.colonizedBy != nil {
-		fmt.Fprintf(w, "\tmining colony owned by %s\n", r.colonizedBy.PlayerName())
-	}
-}
-
-func scanSystem(id int, reply int) {
-	system := index[id]
-	source := index[reply]
-	delay := system.LightTimeTo(source)
-	// log_info("scan hit %s from %s after traveling for %v", system.name, source.name, delay)
-
-	system.EachConn(func(conn *Connection) {
-		fmt.Fprintf(conn, "scan detected from %s\n", source.name)
-	})
-	results := &scanResults{
-		life:        len(system.players) > 0,
-		colonizedBy: system.colonizedBy,
-	}
-	After(delay, func() {
-		deliverReply(source.id, system.id, results)
-	})
-}
-
-func deliverReply(id int, echo int, results *scanResults) {
-	system := index[id]
-	source := index[echo]
-	delay := system.LightTimeTo(source)
-	// log_info("echo received at %s reflected from %s after traveling for %v", system.name, source.name, delay)
-	system.EachConn(func(conn *Connection) {
-		if results.negative() {
-			return
-		}
-		fmt.Fprintf(conn, "scan results from %s [id: %d] (%v away):\n", source.name, echo, delay)
-		results.write(conn)
-	})
 }
 
 func deliverMessage(to_id, from_id int, msg string) {
