@@ -246,4 +246,3 @@ func randomSystem() (*System, error) {
 	planet := index[pick]
 	return planet, nil
 }
-

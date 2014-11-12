@@ -63,10 +63,11 @@ func (c *Connection) Login() {
 			log_error("could not read player: %v", err)
 			player = &Player{name: name}
 			if err := player.Create(); err != nil {
-
+				log_error("unable to create player record: %v", err)
 			}
 			fmt.Fprintf(c, "you look new around these parts, %s.\n", player.name)
 			fmt.Fprintf(c, `if you'd like a description of how to play, type the "help" command`)
+			c.player = player
 		} else {
 			c.player = player
 			fmt.Fprintf(c, "welcome back, %s.\n", player.name)

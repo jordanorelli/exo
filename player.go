@@ -29,6 +29,14 @@ func (p *Player) Create() error {
 	return nil
 }
 
+func (p *Player) Dead() bool {
+    return false
+}
+
+func (p *Player) Tick(frame int64) {
+
+}
+
 func playersTable() {
 	stmnt := `create table if not exists players (
         id integer not null primary key autoincrement,
