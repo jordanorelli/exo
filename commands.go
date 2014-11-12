@@ -167,16 +167,7 @@ var mineCommand = &Command{
 	name: "mine",
 	help: "mines the current system for resources",
 	handler: func(conn *Connection, args ...string) {
-		conn.StartMining()
-		var fn func()
-		fn = func() {
-			if !conn.IsMining() {
-				return
-			}
-			conn.Payout()
-			After(500*time.Millisecond, fn)
-		}
-		After(500*time.Millisecond, fn)
+		conn.Mine()
 	},
 }
 

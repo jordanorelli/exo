@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
 	"net"
 	"strings"
 	"time"
@@ -21,7 +20,6 @@ type Connection struct {
 	kills           int
 	dead            bool
 	money           int
-	mining          bool
 	colonies        []*System
 	bombs           int
 	state           PlayerState // this is wrong...
@@ -105,7 +103,8 @@ func (c *Connection) Tick(frame int64) {
 			c.land()
 		}
 	case mining:
-		c.money += options.miningRate
+		c.Deposit(options.miningRate)
+		log_info("%v", c.money)
 	default:
 		log_error("connection %v has invalid state wtf", c)
 	}
@@ -193,28 +192,24 @@ func (c *Connection) MadeKill(victim *Connection) {
 	}
 }
 
-func (c *Connection) StartMining() {
-	fmt.Fprintf(c, "now mining %s with a payout rate of %v\n", c.System().name, c.System().miningRate)
-	fmt.Fprintln(c, "(press enter to stop mining)")
-	c.mining = true
+func (c *Connection) Mine() {
+	switch c.state {
+	case idle:
+		fmt.Fprintf(c, "now mining %s with a payout rate of %v\n", c.System().name, c.System().miningRate)
+		fmt.Fprintln(c, "(press enter to stop mining)")
+		c.state = mining
+	default:
+		fmt.Fprintf(c, "no\n")
+	}
 }
 
 func (c *Connection) StopMining() {
 	fmt.Fprintf(c, "done mining\n")
-	c.mining = false
+	c.state = idle
 }
 
 func (c *Connection) IsMining() bool {
-	return c.mining
-}
-
-func (c *Connection) Payout() {
-	if c.dead {
-		return
-	}
-	reward := int(rand.NormFloat64()*5.0 + 100.0*c.System().miningRate)
-	c.Deposit(reward)
-	fmt.Fprintf(c, "mined: %d space duckets. total: %d\n", reward, c.money)
+	return c.state == mining
 }
 
 func (c *Connection) Withdraw(n int) {
@@ -223,7 +218,7 @@ func (c *Connection) Withdraw(n int) {
 
 func (c *Connection) Deposit(n int) {
 	c.money += n
-	if c.money >= 25000 {
+	if c.money >= options.economic {
 		c.Win("economic")
 	}
 }
