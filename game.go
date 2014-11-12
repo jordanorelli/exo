@@ -118,6 +118,7 @@ func (g *Game) tick() {
 	g.frame += 1
 	for elem := range g.elems {
 		if elem.Dead() {
+			log_info("delete game object: %v", elem)
 			delete(g.elems, elem)
 		}
 	}
@@ -128,11 +129,5 @@ func (g *Game) tick() {
 
 type GameElement interface {
 	Tick(frame int64)
-	Dead() Mortality
-}
-
-type Mortality bool
-
-func (m Mortality) Dead() Mortality {
-	return m
+	Dead() bool
 }
