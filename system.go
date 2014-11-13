@@ -34,6 +34,11 @@ func (s *System) Dead() bool {
 	return false
 }
 
+func (s *System) Reset() {
+	s.players = make(map[*Connection]bool, 32)
+	s.colonizedBy = nil
+}
+
 func (s *System) Arrive(conn *Connection) {
 	conn.SetSystem(s)
 	log_info("player %s has arrived at system %s", conn.PlayerName(), s.name)

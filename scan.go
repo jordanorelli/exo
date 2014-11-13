@@ -6,6 +6,7 @@ import (
 )
 
 type scan struct {
+	NopReset
 	start         time.Time
 	origin        *System
 	dist          float64

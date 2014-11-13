@@ -95,6 +95,9 @@ func (g *Game) Win(winner *Connection, method string) {
 }
 
 func (g *Game) Reset() {
+	for elem, _ := range g.elems {
+		elem.Reset()
+	}
 	connections := g.connections
 	fresh := NewGame()
 	*g = *fresh
@@ -118,17 +121,24 @@ func (g *Game) Register(elem GameElement) {
 func (g *Game) tick() {
 	g.frame += 1
 	for elem := range g.elems {
+		elem.Tick(g.frame)
+	}
+	for elem := range g.elems {
 		if elem.Dead() {
 			log_info("delete game object: %v", elem)
 			delete(g.elems, elem)
 		}
-	}
-	for elem := range g.elems {
-		elem.Tick(g.frame)
 	}
 }
 
 type GameElement interface {
 	Tick(frame int64)
 	Dead() bool
+	Reset()
+}
+
+type NopReset struct {
+}
+
+func (n NopReset) Reset() {
 }

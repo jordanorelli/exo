@@ -6,6 +6,7 @@ import (
 )
 
 type Bomb struct {
+	NopReset
 	player *Connection
 	origin *System
 	target *System

@@ -49,6 +49,7 @@ func (conn *Connection) Reset() {
 		Conn:   conn.Conn,
 		Reader: bufio.NewReader(conn.Conn),
 		bombs:  1,
+		player: conn.player,
 	}
 	currentGame.Join(conn)
 }
