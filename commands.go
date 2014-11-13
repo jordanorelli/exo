@@ -207,7 +207,7 @@ var bombCommand = &Command{
 		dest_name := strings.Join(args, " ")
 		to, ok := nameIndex[dest_name]
 		if ok {
-			bomb(conn, to)
+			currentGame.Register(NewBomb(conn, to))
 			return
 		}
 
@@ -226,7 +226,7 @@ var bombCommand = &Command{
 			fmt.Fprintf(conn, "weapons are still reloading.  Can bomb again in %v\n", conn.NextBomb())
 			return
 		}
-		bomb(conn, to)
+		currentGame.Register(NewBomb(conn, to))
 	},
 }
 
@@ -244,15 +244,6 @@ var mkBombCommand = &Command{
 		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)
 		fmt.Fprintf(conn, "money: %d space duckets\n", conn.money)
 	},
-}
-
-func bomb(conn *Connection, to *System) {
-	conn.bombs -= 1
-	delay := conn.System().BombTimeTo(to)
-	fmt.Fprintf(conn, "sending bomb to %s. ETA: %v\n", to.name, delay)
-	After(delay, func() {
-		to.Bombed(conn)
-	})
 }
 
 func isCommand(name string) bool {

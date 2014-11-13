@@ -17,6 +17,7 @@ var options struct {
 	frameRate   int
 	miningRate  int
 	playerSpeed float64
+	bombSpeed   float64
 	economic    int
 }
 
@@ -117,5 +118,6 @@ func init() {
 	flag.IntVar(&options.frameRate, "frame-rate", 100, "frame rate, in frames per second")
 	flag.IntVar(&options.miningRate, "mining-rate", 1, "mining rate, in duckets per frame")
 	flag.Float64Var(&options.playerSpeed, "player-speed", 0.8, "player travel speed, relative to C, the speed of light")
+	flag.Float64Var(&options.bombSpeed, "bomb-speed", 0.9, "bomb travel speed, relattive to C, the speed of light")
 	flag.IntVar(&options.economic, "economic", 25000, "amount of money needed to win economic victory")
 }
