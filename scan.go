@@ -23,11 +23,11 @@ type scanResult struct {
 }
 
 func (r *scanResult) Empty() bool {
-	return r.players == nil && r.colonizedBy == nil
+	return (r.players == nil || len(r.players) == 0) && r.colonizedBy == nil
 }
 
 func (r *scanResult) playerNames() []string {
-	if r.players == nil {
+	if r.players == nil || len(r.players) == 0 {
 		return nil
 	}
 	names := make([]string, 0, len(r.players))
