@@ -87,8 +87,6 @@ func (g *Game) Win(winner *Connection, method string) {
 		conn.Reset()
 	}
 
-	ResetQueue()
-
 	g.Reset()
 
 	for conn, _ := range g.connections {

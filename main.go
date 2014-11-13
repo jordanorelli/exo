@@ -98,7 +98,6 @@ func main() {
 	if err != nil {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
-	go RunQueue()
 
 	currentGame = NewGame()
 	go currentGame.Run()
