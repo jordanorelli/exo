@@ -77,7 +77,7 @@ func (c *Connection) Login() {
 				log_error("unable to create player record: %v", err)
 			}
 			fmt.Fprintf(c, "you look new around these parts, %s.\n", player.name)
-			fmt.Fprintf(c, `if you'd like a description of how to play, type the "help" command`)
+			fmt.Fprintf(c, `if you'd like a description of how to play, type the "help" command\n`)
 			c.player = player
 		} else {
 			c.player = player
@@ -94,13 +94,11 @@ func (c *Connection) Dead() bool {
 
 func (c *Connection) Tick(frame int64) {
 	// fuck
-
 	switch c.state {
 	case idle:
 	case dead:
 	case inTransit:
 		c.travelRemaining -= 1
-		log_info("player %s has remaining travel: %v", c.PlayerName(), c.travelRemaining)
 		if c.travelRemaining == 0 {
 			c.land()
 		}
@@ -116,7 +114,6 @@ func (c *Connection) Tick(frame int64) {
 		} else {
 			c.Deposit(1)
 			sys.money -= 1
-			log_info("%v", c.money)
 		}
 	default:
 		log_error("connection %v has invalid state wtf", c)
@@ -124,9 +121,11 @@ func (c *Connection) Tick(frame int64) {
 }
 
 func (c *Connection) TravelTo(dest *System) {
-	fmt.Fprintf(c, "traveling to: %s\n", dest.Label())
 	dist := c.System().DistanceTo(dest)
 	c.travelRemaining = int64(dist / (options.lightSpeed * options.playerSpeed))
+	t := time.Duration(c.travelRemaining) * (time.Second / time.Duration(options.frameRate))
+	fmt.Fprintf(c, "traveling to: %s. ETA: %v\n", dest.Label(), t)
+	c.location.Leave(c)
 	c.location = nil
 	c.dest = dest
 	c.state = inTransit // fuck everything about this
@@ -135,6 +134,7 @@ func (c *Connection) TravelTo(dest *System) {
 func (c *Connection) land() {
 	fmt.Fprintf(c, "you have arrived at %v\n", c.dest.Label())
 	c.location = c.dest
+	c.location.Arrive(c)
 	c.dest = nil
 	c.state = idle
 }
@@ -199,6 +199,10 @@ func (c *Connection) NextBomb() time.Duration {
 }
 
 func (c *Connection) MadeKill(victim *Connection) {
+	if c == victim {
+		log_info("player %s commited suicide.", c.PlayerName())
+		return
+	}
 	c.kills += 1
 	if c.kills == 3 {
 		c.Win("military")

@@ -41,15 +41,15 @@ func (s *System) Reset() {
 
 func (s *System) Arrive(conn *Connection) {
 	conn.SetSystem(s)
-	log_info("player %s has arrived at system %s", conn.PlayerName(), s.name)
+	log_info("player %s has arrived at system %s", conn.PlayerName(), s.Label())
 	if s.players == nil {
 		s.players = make(map[*Connection]bool, 8)
 	}
 	s.players[conn] = true
 	if s.planets == 1 {
-		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", s.name, s.planets)
+		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", s.Label(), s.planets)
 	} else {
-		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", s.name, s.planets)
+		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", s.Label(), s.planets)
 	}
 }
 

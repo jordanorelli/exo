@@ -11,6 +11,7 @@ type Bomb struct {
 	origin *System
 	target *System
 	start  time.Time
+	done   bool
 	fti    int64 // frames to impact
 }
 
@@ -30,13 +31,15 @@ func NewBomb(from *Connection, to *System) *Bomb {
 }
 
 func (b *Bomb) Dead() bool {
-	return b.fti <= 0
+	return b.done
 }
 
 func (b *Bomb) Tick(frame int64) {
 	b.fti -= 1
 	if b.fti <= 0 {
 		b.target.Bombed(b.player)
+		b.done = true
+		log_info("bomb went off on %s", b.target.Label())
 	}
 }
 
