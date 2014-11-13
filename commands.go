@@ -14,6 +14,7 @@ type Command struct {
 	help    string
 	handler func(*Connection, ...string)
 	mobile  bool
+	debug   bool // marks command as a debug mode command
 }
 
 var infoCommand = &Command{
@@ -188,8 +189,9 @@ var colonizeCommand = &Command{
 }
 
 var winCommand = &Command{
-	name: "win",
-	help: "win the game.",
+	name:  "win",
+	help:  "win the game.",
+	debug: true,
 	handler: func(conn *Connection, args ...string) {
 		conn.Win("win-command")
 	},
@@ -271,10 +273,18 @@ func runCommand(conn *Connection, name string, args ...string) {
 }
 
 func registerCommand(c *Command) {
-	commandRegistry[c.name] = c
+	if c.debug {
+		if options.debug {
+			commandRegistry[c.name] = c
+			log_info("registered debug command: %s", c.name)
+		}
+	} else {
+		commandRegistry[c.name] = c
+		log_info("registered command: %s", c.name)
+	}
 }
 
-func init() {
+func setupCommands() {
 	commandRegistry = make(map[string]*Command, 16)
 	registerCommand(bombCommand)
 	registerCommand(broadcastCommand)

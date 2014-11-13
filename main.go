@@ -20,6 +20,7 @@ var options struct {
 	playerSpeed float64
 	bombSpeed   float64
 	economic    int
+	debug       bool
 }
 
 var (
@@ -90,11 +91,13 @@ func handleConnection(conn *Connection) {
 func main() {
 	flag.Parse()
 	dbconnect()
+
 	rand.Seed(time.Now().UnixNano())
 	info_log = log.New(os.Stdout, "[INFO] ", 0)
 	error_log = log.New(os.Stderr, "[ERROR] ", 0)
 
 	setupDb()
+	setupCommands()
 	listener, err := net.Listen("tcp", ":9220")
 	if err != nil {
 		bail(E_No_Port, "unable to start server: %v", err)
@@ -121,4 +124,5 @@ func init() {
 	flag.IntVar(&options.economic, "economic", 25000, "amount of money needed to win economic victory")
 	flag.Float64Var(&options.moneyMean, "money-mean", 10000, "mean amount of money on a system")
 	flag.Float64Var(&options.moneySigma, "money-sigma", 1500, "standard deviation in money per system")
+	flag.BoolVar(&options.debug, "debug", false, "puts the game in debug mode")
 }
