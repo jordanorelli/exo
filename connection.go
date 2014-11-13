@@ -93,6 +93,7 @@ func (c *Connection) Dead() bool {
 
 func (c *Connection) Tick(frame int64) {
 	// fuck
+
 	switch c.state {
 	case idle:
 	case dead:
@@ -157,14 +158,14 @@ func (c *Connection) InTransit() bool {
 func (c *Connection) RecordScan() {
 	fmt.Fprintln(c, "scanning known systems for signs of life")
 	c.lastScan = time.Now()
-	After(1*time.Minute, func() {
+	time.AfterFunc(1*time.Minute, func() {
 		fmt.Fprintln(c, "scanner ready")
 	})
 }
 
 func (c *Connection) RecordBomb() {
 	c.lastBomb = time.Now()
-	After(15*time.Second, func() {
+	time.AfterFunc(15*time.Second, func() {
 		fmt.Fprintln(c, "bomb arsenal reloaded")
 	})
 }
@@ -231,10 +232,10 @@ func (c *Connection) Die() {
 	fmt.Fprintf(c, "you were bombed.  You will respawn in 1 minutes.\n")
 	c.dead = true
 	c.System().Leave(c)
-	After(30*time.Second, func() {
+	time.AfterFunc(30*time.Second, func() {
 		fmt.Fprintf(c, "respawn in 30 seconds.\n")
 	})
-	After(time.Minute, c.Respawn)
+	time.AfterFunc(time.Minute, c.Respawn)
 }
 
 func (c *Connection) Respawn() {

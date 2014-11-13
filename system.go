@@ -153,9 +153,9 @@ func (s *System) Bombed(bomber *Connection) {
 		if id == s.id {
 			continue
 		}
-		delay := s.BombTimeTo(index[id])
+		delay := s.LightTimeTo(index[id])
 		id2 := id
-		After(delay, func() {
+		time.AfterFunc(delay, func() {
 			bombNotice(id2, s.id)
 		})
 	}
