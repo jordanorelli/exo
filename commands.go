@@ -37,11 +37,11 @@ var nearbyCommand = &Command{
 			return
 		}
 		fmt.Fprintf(conn, "--------------------------------------------------------------------------------\n")
-		fmt.Fprintf(conn, "%-4s %-20s %s\n", "id", "name", "travel time")
+		fmt.Fprintf(conn, "%-4s %-20s %s\n", "id", "name", "distance")
 		fmt.Fprintf(conn, "--------------------------------------------------------------------------------\n")
 		for _, neighbor := range neighbors {
 			other := index[neighbor.id]
-			fmt.Fprintf(conn, "%-4d %-20s %v\n", other.id, other.name, system.TravelTimeTo(other))
+			fmt.Fprintf(conn, "%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
 		}
 		fmt.Fprintf(conn, "--------------------------------------------------------------------------------\n")
 	},

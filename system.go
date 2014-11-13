@@ -19,9 +19,9 @@ type System struct {
 	planets     int
 	name        string
 	players     map[*Connection]bool
-	miningRate  float64
 	colonizedBy *Connection
 	distances   []Ray
+	money       int64
 }
 
 func (s *System) Tick(frame int64) {
@@ -246,7 +246,8 @@ func indexSystems() map[int]*System {
 		}
 		index[p.id] = &p
 		nameIndex[p.name] = &p
-		p.miningRate = rand.Float64()
+		p.money = int64(rand.NormFloat64()*options.moneySigma + options.moneyMean)
+		log_info("seeded system %s with %v monies", p.Label(), p.money)
 	}
 	return index
 }

@@ -105,8 +105,19 @@ func (c *Connection) Tick(frame int64) {
 			c.land()
 		}
 	case mining:
-		c.Deposit(options.miningRate)
-		log_info("%v", c.money)
+		sys := c.System()
+		if sys == nil {
+			log_error("a player is in the mining state with no system. what?")
+			break
+		}
+		if sys.money <= 0 {
+			fmt.Fprintf(c, "system %s is all out of space duckets.\n", sys.Label())
+			c.StopMining()
+		} else {
+			c.Deposit(1)
+			sys.money -= 1
+			log_info("%v", c.money)
+		}
 	default:
 		log_error("connection %v has invalid state wtf", c)
 	}
@@ -197,7 +208,7 @@ func (c *Connection) MadeKill(victim *Connection) {
 func (c *Connection) Mine() {
 	switch c.state {
 	case idle:
-		fmt.Fprintf(c, "now mining %s with a payout rate of %v\n", c.System().name, c.System().miningRate)
+		fmt.Fprintf(c, "now mining %s. %v space duckets remaining.\n", c.System().name, c.System().money)
 		fmt.Fprintln(c, "(press enter to stop mining)")
 		c.state = mining
 	default:

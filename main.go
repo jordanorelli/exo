@@ -15,7 +15,8 @@ import (
 var options struct {
 	lightSpeed  float64
 	frameRate   int
-	miningRate  int
+	moneySigma  float64
+	moneyMean   float64
 	playerSpeed float64
 	bombSpeed   float64
 	economic    int
@@ -115,8 +116,9 @@ func main() {
 func init() {
 	flag.Float64Var(&options.lightSpeed, "light-speed", 0.01, "speed of light in parsecs per frame")
 	flag.IntVar(&options.frameRate, "frame-rate", 100, "frame rate, in frames per second")
-	flag.IntVar(&options.miningRate, "mining-rate", 1, "mining rate, in duckets per frame")
 	flag.Float64Var(&options.playerSpeed, "player-speed", 0.8, "player travel speed, relative to C, the speed of light")
 	flag.Float64Var(&options.bombSpeed, "bomb-speed", 0.9, "bomb travel speed, relattive to C, the speed of light")
 	flag.IntVar(&options.economic, "economic", 25000, "amount of money needed to win economic victory")
+	flag.Float64Var(&options.moneyMean, "money-mean", 10000, "mean amount of money on a system")
+	flag.Float64Var(&options.moneySigma, "money-sigma", 1500, "standard deviation in money per system")
 }
