@@ -24,6 +24,16 @@ type System struct {
 	distances   []Ray
 }
 
+func (s *System) Tick(frame int64) {
+	if s.colonizedBy != nil {
+		s.colonizedBy.Deposit(1)
+	}
+}
+
+func (s *System) Dead() bool {
+	return false
+}
+
 func (s *System) Arrive(conn *Connection) {
 	conn.SetSystem(s)
 	log_info("player %s has arrived at system %s", conn.PlayerName(), s.name)

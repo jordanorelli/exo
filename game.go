@@ -39,6 +39,9 @@ func NewGame() *Game {
 	if err := game.Create(); err != nil {
 		log_error("unable to create game: %v", err)
 	}
+	for _, system := range index {
+		game.Register(system)
+	}
 	return game
 }
 

@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var commandRegistry map[string]*Command
@@ -176,27 +174,13 @@ var colonizeCommand = &Command{
 	help: "establishes a mining colony on the current system",
 	handler: func(conn *Connection, arg ...string) {
 		system := conn.System()
-		var fn func()
-		fn = func() {
-			reward := int(rand.NormFloat64()*5.0 + 100.0*system.miningRate)
-			if system.colonizedBy != nil {
-				system.colonizedBy.Deposit(reward)
-				fmt.Fprintf(system.colonizedBy, "mining colony on %s pays you %d space duckets. total: %d space duckets.\n", system.name, reward, system.colonizedBy.money)
-			}
-			After(5*time.Second, fn)
-		}
-
-		if system.colonizedBy != nil {
-			system.colonizedBy = conn
-			After(5*time.Second, fn)
-			return
-		}
-
 		if conn.money > 2000 {
 			conn.Withdraw(2000)
+			if system.colonizedBy != nil {
+				fmt.Fprintf(system.colonizedBy, "your colony on %s has been stolen by %s\n", system.Label(), conn.PlayerName())
+			}
 			system.colonizedBy = conn
 			fmt.Fprintf(conn, "set up a mining colony on %s\n", conn.System().name)
-			After(5*time.Second, fn)
 		} else {
 			fmt.Fprintf(conn, "not enough money!  it costs 2000 duckets to start a mining colony\n")
 		}
