@@ -201,15 +201,10 @@ var bombCommand = &Command{
 	name: "bomb",
 	help: "bombs a system, with a big space bomb",
 	handler: func(conn *Connection, args ...string) {
-		if conn.bombs < 1 {
-			fmt.Fprintf(conn, "no more bombs left! build more bombs!\n")
-			return
-		}
-
 		dest_name := strings.Join(args, " ")
 		to, ok := nameIndex[dest_name]
 		if ok {
-			currentGame.Register(NewBomb(conn, to))
+			conn.SendBomb(to)
 			return
 		}
 
@@ -224,11 +219,7 @@ var bombCommand = &Command{
 			fmt.Fprintf(conn, `oh dear, there doesn't seem to be a system with id %d\n`, id_n)
 			return
 		}
-		if !conn.CanBomb() {
-			fmt.Fprintf(conn, "weapons are still reloading.  Can bomb again in %v\n", conn.NextBomb())
-			return
-		}
-		currentGame.Register(NewBomb(conn, to))
+		conn.SendBomb(to)
 	},
 }
 

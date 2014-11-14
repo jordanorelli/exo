@@ -121,6 +121,22 @@ func (c *Connection) TravelTo(dest *System) {
 	c.state = inTransit // fuck everything about this
 }
 
+func (c *Connection) SendBomb(target *System) {
+	if c.bombs <= 0 {
+		fmt.Fprintln(c, "cannot send bomb: no bombs left")
+		return
+	}
+	if time.Since(c.lastBomb) < 5*time.Second {
+		fmt.Fprintln(c, "cannod send bomb: bombs are reloading")
+		return
+	}
+	c.bombs -= 1
+	c.lastBomb = time.Now()
+	bomb := NewBomb(c, target)
+	currentGame.Register(bomb)
+	fmt.Fprintf(c, "sending bomb to system %v\n", target.Label())
+}
+
 func (c *Connection) land() {
 	fmt.Fprintf(c, "you have arrived at %v\n", c.dest.Label())
 	c.location = c.dest
@@ -174,10 +190,6 @@ func (c *Connection) RecordBomb() {
 
 func (c *Connection) CanScan() bool {
 	return time.Since(c.lastScan) > 1*time.Minute
-}
-
-func (c *Connection) CanBomb() bool {
-	return time.Since(c.lastBomb) > 15*time.Second
 }
 
 func (c *Connection) NextScan() time.Duration {
