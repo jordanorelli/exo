@@ -47,7 +47,7 @@ func NewConnection(conn net.Conn) *Connection {
 
 func (c *Connection) Login() {
 	for {
-		fmt.Fprintf(c, "what is your name, adventurer?\n")
+		c.Printf("what is your name, adventurer?\n")
 		name, err := c.ReadString('\n')
 		if err == nil {
 			name = strings.TrimSpace(name)
@@ -56,7 +56,7 @@ func (c *Connection) Login() {
 			return
 		}
 		if !ValidName(name) {
-			fmt.Fprintf(c, "that name is illegal.\n")
+			c.Printf("that name is illegal.\n")
 			continue
 		}
 		log_info("player connected: %v", name)
@@ -67,12 +67,12 @@ func (c *Connection) Login() {
 			if err := player.Create(); err != nil {
 				log_error("unable to create player record: %v", err)
 			}
-			fmt.Fprintf(c, "you look new around these parts, %s.\n", player.name)
-			fmt.Fprintf(c, `if you'd like a description of how to play, type the "help" command\n`)
+			c.Printf("you look new around these parts, %s.\n", player.name)
+			c.Printf(`if you'd like a description of how to play, type the "help" command\n`)
 			c.player = player
 		} else {
 			c.player = player
-			fmt.Fprintf(c, "welcome back, %s.\n", player.name)
+			c.Printf("welcome back, %s.\n", player.name)
 		}
 		break
 	}
@@ -100,7 +100,7 @@ func (c *Connection) Tick(frame int64) {
 			break
 		}
 		if sys.money <= 0 {
-			fmt.Fprintf(c, "system %s is all out of space duckets.\n", sys.Label())
+			c.Printf("system %s is all out of space duckets.\n", sys.Label())
 			c.StopMining()
 		} else {
 			c.Deposit(1)
@@ -115,7 +115,7 @@ func (c *Connection) TravelTo(dest *System) {
 	dist := c.System().DistanceTo(dest)
 	c.travelRemaining = int64(dist / (options.lightSpeed * options.playerSpeed))
 	t := time.Duration(c.travelRemaining) * (time.Second / time.Duration(options.frameRate))
-	fmt.Fprintf(c, "traveling to: %s. ETA: %v\n", dest.Label(), t)
+	c.Printf("traveling to: %s. ETA: %v\n", dest.Label(), t)
 	c.location.Leave(c)
 	c.location = nil
 	c.dest = dest
@@ -135,7 +135,7 @@ func (c *Connection) SendBomb(target *System) {
 	c.lastBomb = time.Now()
 	bomb := NewBomb(c, target)
 	currentGame.Register(bomb)
-	fmt.Fprintf(c, "sending bomb to system %v\n", target.Label())
+	c.Printf("sending bomb to system %v\n", target.Label())
 }
 
 func (c *Connection) ReadLines(out chan []string) {
@@ -160,8 +160,12 @@ func (c *Connection) ReadLines(out chan []string) {
 	}
 }
 
+func (c *Connection) Printf(template string, args ...interface{}) (int, error) {
+	return fmt.Fprintf(c, template, args...)
+}
+
 func (c *Connection) land() {
-	fmt.Fprintf(c, "you have arrived at %v\n", c.dest.Label())
+	c.Printf("you have arrived at %v\n", c.dest.Label())
 	c.location = c.dest
 	c.location.Arrive(c)
 	c.dest = nil
@@ -237,16 +241,16 @@ func (c *Connection) MadeKill(victim *Connection) {
 func (c *Connection) Mine() {
 	switch c.state {
 	case idle:
-		fmt.Fprintf(c, "now mining %s. %v space duckets remaining.\n", c.System().name, c.System().money)
+		c.Printf("now mining %s. %v space duckets remaining.\n", c.System().name, c.System().money)
 		fmt.Fprintln(c, "(press enter to stop mining)")
 		c.state = mining
 	default:
-		fmt.Fprintf(c, "no\n")
+		c.Printf("no\n")
 	}
 }
 
 func (c *Connection) StopMining() {
-	fmt.Fprintf(c, "done mining\n")
+	c.Printf("done mining\n")
 	c.state = idle
 }
 
@@ -270,11 +274,11 @@ func (c *Connection) Win(method string) {
 }
 
 func (c *Connection) Die() {
-	fmt.Fprintf(c, "you were bombed.  You will respawn in 1 minutes.\n")
+	c.Printf("you were bombed.  You will respawn in 1 minutes.\n")
 	c.dead = true
 	c.System().Leave(c)
 	time.AfterFunc(30*time.Second, func() {
-		fmt.Fprintf(c, "respawn in 30 seconds.\n")
+		c.Printf("respawn in 30 seconds.\n")
 	})
 	time.AfterFunc(time.Minute, c.Respawn)
 }

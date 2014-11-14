@@ -95,7 +95,7 @@ func (g *Game) Win(winner *Connection, method string) {
 	log_info("player %s has won by %s victory", winner.PlayerName(), method)
 
 	for conn, _ := range g.connections {
-		fmt.Fprintf(conn, "player %s has won by %s victory.\n", winner.PlayerName(), method)
+		conn.Printf("player %s has won by %s victory.\n", winner.PlayerName(), method)
 	}
 }
 

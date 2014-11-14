@@ -64,7 +64,7 @@ func handleConnection(conn *Connection) {
 		case "quit":
 			return
 		default:
-			fmt.Fprintf(conn, "hmm I'm not sure I know that one.\n")
+			conn.Printf("hmm I'm not sure I know that one.\n")
 		}
 
 	}

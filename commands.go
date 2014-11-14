@@ -21,9 +21,9 @@ var infoCommand = &Command{
 	name: "info",
 	help: "gives you some info about your current position",
 	handler: func(conn *Connection, args ...string) {
-		fmt.Fprintf(conn, "current planet: %s\n", conn.System().name)
-		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)
-		fmt.Fprintf(conn, "money: %d space duckets\n", conn.money)
+		conn.Printf("current planet: %s\n", conn.System().name)
+		conn.Printf("bombs: %d\n", conn.bombs)
+		conn.Printf("money: %d space duckets\n", conn.money)
 	},
 }
 
@@ -37,14 +37,14 @@ var nearbyCommand = &Command{
 			log_error("unable to get neighbors: %v", err)
 			return
 		}
-		fmt.Fprintf(conn, "--------------------------------------------------------------------------------\n")
-		fmt.Fprintf(conn, "%-4s %-20s %s\n", "id", "name", "distance")
-		fmt.Fprintf(conn, "--------------------------------------------------------------------------------\n")
+		conn.Printf("--------------------------------------------------------------------------------\n")
+		conn.Printf("%-4s %-20s %s\n", "id", "name", "distance")
+		conn.Printf("--------------------------------------------------------------------------------\n")
 		for _, neighbor := range neighbors {
 			other := index[neighbor.id]
-			fmt.Fprintf(conn, "%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
+			conn.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
 		}
-		fmt.Fprintf(conn, "--------------------------------------------------------------------------------\n")
+		conn.Printf("--------------------------------------------------------------------------------\n")
 	},
 }
 
@@ -85,10 +85,10 @@ systems.  Star systems that are farther away take longer to communicate with.
 		for _, cmdName := range args {
 			cmd, ok := commandRegistry[cmdName]
 			if !ok {
-				fmt.Fprintf(conn, "no such command: %v\n", cmdName)
+				conn.Printf("no such command: %v\n", cmdName)
 				continue
 			}
-			fmt.Fprintf(conn, "%v: %v\n", cmdName, cmd.help)
+			conn.Printf("%v: %v\n", cmdName, cmd.help)
 		}
 	},
 }
@@ -105,7 +105,7 @@ var commandsCommand = &Command{
 		fmt.Fprintln(conn, "--------------------------------------------------------------------------------")
 		for _, name := range names {
 			cmd := commandRegistry[name]
-			fmt.Fprintf(conn, "%-16s %s\n", name, cmd.help)
+			conn.Printf("%-16s %s\n", name, cmd.help)
 		}
 		fmt.Fprintln(conn, "--------------------------------------------------------------------------------")
 	},
@@ -116,7 +116,7 @@ var scanCommand = &Command{
 	help: "super duper scan",
 	handler: func(conn *Connection, args ...string) {
 		if !conn.CanScan() {
-			fmt.Fprintf(conn, "scanners are still recharging.  Can scan again in %v\n", conn.NextScan())
+			conn.Printf("scanners are still recharging.  Can scan again in %v\n", conn.NextScan())
 			return
 		}
 		currentGame.Register(NewScan(conn.System()))
@@ -149,13 +149,13 @@ var gotoCommand = &Command{
 
 		id_n, err := strconv.Atoi(dest_name)
 		if err != nil {
-			fmt.Fprintf(conn, `hmm, I don't know a system by the name "%s", try something else`, dest_name)
+			conn.Printf(`hmm, I don't know a system by the name "%s", try something else`, dest_name)
 			return
 		}
 
 		to, ok = index[id_n]
 		if !ok {
-			fmt.Fprintf(conn, `oh dear, there doesn't seem to be a system with id %d`, id_n)
+			conn.Printf(`oh dear, there doesn't seem to be a system with id %d`, id_n)
 			return
 		}
 		conn.TravelTo(to)
@@ -178,12 +178,12 @@ var colonizeCommand = &Command{
 		if conn.money > 2000 {
 			conn.Withdraw(2000)
 			if system.colonizedBy != nil {
-				fmt.Fprintf(system.colonizedBy, "your colony on %s has been stolen by %s\n", system.Label(), conn.PlayerName())
+				system.colonizedBy.Printf("your colony on %s has been stolen by %s\n", system.Label(), conn.PlayerName())
 			}
 			system.colonizedBy = conn
-			fmt.Fprintf(conn, "set up a mining colony on %s\n", conn.System().name)
+			conn.Printf("set up a mining colony on %s\n", conn.System().name)
 		} else {
-			fmt.Fprintf(conn, "not enough money!  it costs 2000 duckets to start a mining colony\n")
+			conn.Printf("not enough money!  it costs 2000 duckets to start a mining colony\n")
 		}
 	},
 }
@@ -210,13 +210,13 @@ var bombCommand = &Command{
 
 		id_n, err := strconv.Atoi(dest_name)
 		if err != nil {
-			fmt.Fprintf(conn, `hmm, I don't know a system by the name "%s", try something else\n`, dest_name)
+			conn.Printf(`hmm, I don't know a system by the name "%s", try something else\n`, dest_name)
 			return
 		}
 
 		to, ok = index[id_n]
 		if !ok {
-			fmt.Fprintf(conn, `oh dear, there doesn't seem to be a system with id %d\n`, id_n)
+			conn.Printf(`oh dear, there doesn't seem to be a system with id %d\n`, id_n)
 			return
 		}
 		conn.SendBomb(to)
@@ -228,14 +228,14 @@ var mkBombCommand = &Command{
 	help: "make a bomb.  Costs 500 space duckets",
 	handler: func(conn *Connection, args ...string) {
 		if conn.money < 500 {
-			fmt.Fprintf(conn, "not enough money!  Bombs cost 500 space duckets to build, you only have %d in the bank.\n", conn.money)
+			conn.Printf("not enough money!  Bombs cost 500 space duckets to build, you only have %d in the bank.\n", conn.money)
 			return
 		}
 		conn.Withdraw(500)
 		conn.bombs += 1
-		fmt.Fprintf(conn, "built a bomb!\n")
-		fmt.Fprintf(conn, "bombs: %d\n", conn.bombs)
-		fmt.Fprintf(conn, "money: %d space duckets\n", conn.money)
+		conn.Printf("built a bomb!\n")
+		conn.Printf("bombs: %d\n", conn.bombs)
+		conn.Printf("money: %d space duckets\n", conn.money)
 	},
 }
 
@@ -244,7 +244,7 @@ var playersCommand = &Command{
 	help: "lists the connected players",
 	handler: func(conn *Connection, args ...string) {
 		for other, _ := range currentGame.connections {
-			fmt.Fprintf(conn, "%v\n", other.PlayerName())
+			conn.Printf("%v\n", other.PlayerName())
 		}
 	},
 }
@@ -265,17 +265,17 @@ func isCommand(name string) bool {
 func runCommand(conn *Connection, name string, args ...string) {
 	cmd, ok := commandRegistry[name]
 	if !ok {
-		fmt.Fprintf(conn, "no such command: %s\n", name)
+		conn.Printf("no such command: %s\n", name)
 		return
 	}
 
 	if conn.dead {
-		fmt.Fprintf(conn, "you're dead.\n")
+		conn.Printf("you're dead.\n")
 		return
 	}
 
 	if conn.InTransit() && !cmd.mobile {
-		fmt.Fprintf(conn, "command %s can not be used while in transit\n", name)
+		conn.Printf("command %s can not be used while in transit\n", name)
 		return
 	}
 

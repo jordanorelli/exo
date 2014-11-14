@@ -47,9 +47,9 @@ func (s *System) Arrive(conn *Connection) {
 	}
 	s.players[conn] = true
 	if s.planets == 1 {
-		fmt.Fprintf(conn, "you are in the system %s. There is %d planet here.\n", s.Label(), s.planets)
+		conn.Printf("you are in the system %s. There is %d planet here.\n", s.Label(), s.planets)
 	} else {
-		fmt.Fprintf(conn, "you are in the system %s. There are %d planets here.\n", s.Label(), s.planets)
+		conn.Printf("you are in the system %s. There are %d planets here.\n", s.Label(), s.planets)
 	}
 }
 
@@ -60,7 +60,7 @@ func (s *System) Leave(p *Connection) {
 
 func (s *System) NotifyInhabitants(template string, args ...interface{}) {
 	s.EachConn(func(conn *Connection) {
-		fmt.Fprintf(conn, template, args...)
+		conn.Printf(template, args...)
 	})
 }
 
@@ -150,7 +150,7 @@ func (s *System) Bombed(bomber *Connection) {
 		bomber.MadeKill(conn)
 	})
 	if s.colonizedBy != nil {
-		fmt.Fprintf(s.colonizedBy, "your mining colony on %s has been destroyed!\n", s.name)
+		s.colonizedBy.Printf("your mining colony on %s has been destroyed!\n", s.name)
 		s.colonizedBy = nil
 	}
 
@@ -170,7 +170,7 @@ func bombNotice(to_id, from_id int) {
 	to := index[to_id]
 	from := index[from_id]
 	to.EachConn(func(conn *Connection) {
-		fmt.Fprintf(conn, "a bombing has been observed on %s\n", from.name)
+		conn.Printf("a bombing has been observed on %s\n", from.name)
 	})
 }
 
