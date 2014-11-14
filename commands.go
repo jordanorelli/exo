@@ -278,6 +278,11 @@ func runCommand(conn *Connection, name string, args ...string) {
 		fmt.Fprintf(conn, "command %s can not be used while in transit\n", name)
 		return
 	}
+
+	if conn.IsMining() {
+		conn.StopMining()
+	}
+
 	cmd.handler(conn, args...)
 }
 

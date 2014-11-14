@@ -3,12 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
 	"net"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -52,28 +50,11 @@ func handleConnection(conn *Connection) {
 	conn.Login()
 
 	conn.Respawn()
-	for {
-		line, err := conn.ReadString('\n')
-		switch err {
-		case io.EOF:
-			return
-		case nil:
-			break
-		default:
-			log_error("failed to read line from player %s: %v", conn.PlayerName(), err)
-			return
-		}
-		line = strings.TrimSpace(line)
 
-		if conn.IsMining() {
-			conn.StopMining()
-		}
+	c := make(chan []string)
+	go conn.ReadLines(c)
 
-		if line == "" {
-			continue
-		}
-		parts := strings.Split(line, " ")
-
+	for parts := range c {
 		if isCommand(parts[0]) {
 			runCommand(conn, parts[0], parts[1:]...)
 			continue
@@ -85,6 +66,7 @@ func handleConnection(conn *Connection) {
 		default:
 			fmt.Fprintf(conn, "hmm I'm not sure I know that one.\n")
 		}
+
 	}
 }
 

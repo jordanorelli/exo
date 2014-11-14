@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"time"
@@ -135,6 +136,28 @@ func (c *Connection) SendBomb(target *System) {
 	bomb := NewBomb(c, target)
 	currentGame.Register(bomb)
 	fmt.Fprintf(c, "sending bomb to system %v\n", target.Label())
+}
+
+func (c *Connection) ReadLines(out chan []string) {
+	defer close(out)
+
+	for {
+		line, err := c.ReadString('\n')
+		switch err {
+		case io.EOF:
+			return
+		case nil:
+			break
+		default:
+			log_error("unable to read line on connection: %v", err)
+			return
+		}
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		out <- strings.Split(line, " ")
+	}
 }
 
 func (c *Connection) land() {
