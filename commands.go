@@ -249,6 +249,14 @@ var playersCommand = &Command{
 	},
 }
 
+var balCommand = &Command{
+	name: "bal",
+	help: "displays your current balance in space duckets",
+	handler: func(conn *Connection, args ...string) {
+		fmt.Fprintln(conn, conn.money)
+	},
+}
+
 func isCommand(name string) bool {
 	_, ok := commandRegistry[name]
 	return ok
@@ -297,7 +305,8 @@ func setupCommands() {
 	registerCommand(mineCommand)
 	registerCommand(mkBombCommand)
 	registerCommand(nearbyCommand)
+	registerCommand(playersCommand)
 	registerCommand(scanCommand)
 	registerCommand(winCommand)
-	registerCommand(playersCommand)
+	registerCommand(balCommand)
 }
