@@ -21,10 +21,10 @@ var options struct {
 	bombSpeed   float64
 	economic    int
 	debug       bool
+	speckPath   string
 }
 
 var (
-	dataPath    = "/projects/exo/expl.speck"
 	info_log    *log.Logger
 	error_log   *log.Logger
 	currentGame *Game
@@ -130,4 +130,5 @@ func init() {
 	flag.Float64Var(&options.moneyMean, "money-mean", 10000, "mean amount of money on a system")
 	flag.Float64Var(&options.moneySigma, "money-sigma", 1500, "standard deviation in money per system")
 	flag.BoolVar(&options.debug, "debug", false, "puts the game in debug mode")
+	flag.StringVar(&options.speckPath, "speck-path", "/projects/exo/expl.speck", "path to exoplanet speck file")
 }

@@ -39,7 +39,7 @@ func planetsData() {
 		return
 	}
 	if n == 0 {
-		fi, err := os.Open(dataPath)
+		fi, err := os.Open(options.speckPath)
 		if err != nil {
 			bail(E_No_Data, "unable to open data path: %v", err)
 		}
