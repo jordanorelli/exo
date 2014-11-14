@@ -44,16 +44,6 @@ func NewConnection(conn net.Conn) *Connection {
 	return c
 }
 
-func (conn *Connection) Reset() {
-	*conn = Connection{
-		Conn:   conn.Conn,
-		Reader: bufio.NewReader(conn.Conn),
-		bombs:  1,
-		player: conn.player,
-	}
-	currentGame.Join(conn)
-}
-
 func (c *Connection) Login() {
 	for {
 		fmt.Fprintf(c, "what is your name, adventurer?\n")

@@ -6,7 +6,6 @@ import (
 )
 
 type broadcast struct {
-	NopReset
 	start        time.Time
 	origin       *System
 	dist         float64

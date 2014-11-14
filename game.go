@@ -9,6 +9,7 @@ type Game struct {
 	id          Id
 	start       time.Time
 	end         time.Time
+	done        chan interface{}
 	winner      string
 	winMethod   string
 	connections map[*Connection]bool
@@ -33,6 +34,7 @@ func NewGame() *Game {
 	game := &Game{
 		id:          NewId(),
 		start:       time.Now(),
+		done:        make(chan interface{}),
 		connections: make(map[*Connection]bool, 32),
 		elems:       make(map[GameElement]bool, 32),
 	}
@@ -41,6 +43,14 @@ func NewGame() *Game {
 	}
 	for _, system := range index {
 		game.Register(system)
+	}
+	if currentGame != nil {
+		log_info("passing %d connections...", len(currentGame.connections))
+		for conn, _ := range currentGame.connections {
+			log_info("moving player %s to new game", conn.PlayerName())
+			currentGame.Quit(conn)
+			game.Join(conn)
+		}
 	}
 	return game
 }
@@ -76,28 +86,20 @@ func (g *Game) Quit(conn *Connection) {
 }
 
 func (g *Game) Win(winner *Connection, method string) {
+	defer close(g.done)
 	g.end = time.Now()
 	g.winner = winner.PlayerName()
 	g.winMethod = method
 	g.Store()
 
+	log_info("player %s has won by %s victory", winner.PlayerName(), method)
+
 	for conn, _ := range g.connections {
 		fmt.Fprintf(conn, "player %s has won by %s victory.\n", winner.PlayerName(), method)
-		fmt.Fprintf(conn, "starting new game ...\n")
-		conn.Reset()
-	}
-
-	g.Reset()
-
-	for conn, _ := range g.connections {
-		conn.Respawn()
 	}
 }
 
 func (g *Game) Reset() {
-	for elem, _ := range g.elems {
-		elem.Reset()
-	}
 	connections := g.connections
 	fresh := NewGame()
 	*g = *fresh
@@ -110,6 +112,11 @@ func (g *Game) Run() {
 		select {
 		case <-ticker:
 			g.tick()
+		case <-g.done:
+			for conn, _ := range g.connections {
+				conn.Close()
+			}
+			return
 		}
 	}
 }
@@ -134,11 +141,4 @@ func (g *Game) tick() {
 type GameElement interface {
 	Tick(frame int64)
 	Dead() bool
-	Reset()
-}
-
-type NopReset struct {
-}
-
-func (n NopReset) Reset() {
 }

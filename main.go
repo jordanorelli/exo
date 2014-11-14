@@ -103,8 +103,13 @@ func main() {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
 
-	currentGame = NewGame()
-	go currentGame.Run()
+	go func() {
+		for {
+			log_info("starting new game")
+			currentGame = NewGame()
+			currentGame.Run()
+		}
+	}()
 
 	for {
 		conn, err := listener.Accept()
