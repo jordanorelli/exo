@@ -239,6 +239,16 @@ var mkBombCommand = &Command{
 	},
 }
 
+var playersCommand = &Command{
+	name: "players",
+	help: "lists the connected players",
+	handler: func(conn *Connection, args ...string) {
+		for other, _ := range currentGame.connections {
+			fmt.Fprintf(conn, "%v\n", other.PlayerName())
+		}
+	},
+}
+
 func isCommand(name string) bool {
 	_, ok := commandRegistry[name]
 	return ok
@@ -285,8 +295,9 @@ func setupCommands() {
 	registerCommand(helpCommand)
 	registerCommand(infoCommand)
 	registerCommand(mineCommand)
+	registerCommand(mkBombCommand)
 	registerCommand(nearbyCommand)
 	registerCommand(scanCommand)
-	registerCommand(mkBombCommand)
 	registerCommand(winCommand)
+	registerCommand(playersCommand)
 }
