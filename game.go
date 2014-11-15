@@ -47,7 +47,7 @@ func NewGame() *Game {
 	if currentGame != nil {
 		log_info("passing %d connections...", len(currentGame.connections))
 		for conn, _ := range currentGame.connections {
-			log_info("moving player %s to new game", conn.PlayerName())
+			log_info("moving player %s to new game", conn.Name())
 			currentGame.Quit(conn)
 			game.Join(conn)
 		}
@@ -88,14 +88,14 @@ func (g *Game) Quit(conn *Connection) {
 func (g *Game) Win(winner *Connection, method string) {
 	defer close(g.done)
 	g.end = time.Now()
-	g.winner = winner.PlayerName()
+	g.winner = winner.Name()
 	g.winMethod = method
 	g.Store()
 
-	log_info("player %s has won by %s victory", winner.PlayerName(), method)
+	log_info("player %s has won by %s victory", winner.Name(), method)
 
 	for conn, _ := range g.connections {
-		conn.Printf("player %s has won by %s victory.\n", winner.PlayerName(), method)
+		conn.Printf("player %s has won by %s victory.\n", winner.Name(), method)
 	}
 }
 

@@ -31,7 +31,7 @@ func (r *scanResult) playerNames() []string {
 	}
 	names := make([]string, 0, len(r.players))
 	for conn := range r.players {
-		names = append(names, conn.PlayerName())
+		names = append(names, conn.Name())
 	}
 	return names
 }
@@ -102,7 +102,7 @@ func (s *scan) echos() {
 			s.origin.NotifyInhabitants("\tinhabitants: %v\n", inhabitants)
 		}
 		if res.colonizedBy != nil {
-			s.origin.NotifyInhabitants("\tcolonized by: %v\n", res.colonizedBy.PlayerName())
+			s.origin.NotifyInhabitants("\tcolonized by: %v\n", res.colonizedBy.Name())
 		}
 	}
 }

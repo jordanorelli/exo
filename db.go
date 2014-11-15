@@ -67,7 +67,7 @@ func setupDb() {
 	planetsTable()
 	planetsData()
 	edgesTable()
-	playersTable()
+	profilesTable()
 	gamesTable()
 	fillEdges()
 }

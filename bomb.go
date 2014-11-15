@@ -6,12 +6,12 @@ import (
 )
 
 type Bomb struct {
-	player *Connection
-	origin *System
-	target *System
-	start  time.Time
-	done   bool
-	fti    int64 // frames to impact
+	profile *Connection
+	origin  *System
+	target  *System
+	start   time.Time
+	done    bool
+	fti     int64 // frames to impact
 }
 
 func NewBomb(from *Connection, to *System) *Bomb {
@@ -19,13 +19,13 @@ func NewBomb(from *Connection, to *System) *Bomb {
 	dist := origin.DistanceTo(to)
 	fti := int64(dist / (options.lightSpeed * options.bombSpeed))
 	eta := time.Duration(fti) * time.Second / time.Duration(options.frameRate)
-	log_info("bomb from: %s to: %s ETA: %v", from.PlayerName(), to.Label(), eta)
+	log_info("bomb from: %s to: %s ETA: %v", from.Name(), to.Label(), eta)
 	return &Bomb{
-		player: from,
-		origin: origin,
-		target: to,
-		fti:    fti,
-		start:  time.Now(),
+		profile: from,
+		origin:  origin,
+		target:  to,
+		fti:     fti,
+		start:   time.Now(),
 	}
 }
 
@@ -36,7 +36,7 @@ func (b *Bomb) Dead() bool {
 func (b *Bomb) Tick(frame int64) {
 	b.fti -= 1
 	if b.fti <= 0 {
-		b.target.Bombed(b.player)
+		b.target.Bombed(b.profile)
 		b.done = true
 		log_info("bomb went off on %s", b.target.Label())
 	}

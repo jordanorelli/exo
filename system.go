@@ -41,7 +41,7 @@ func (s *System) Reset() {
 
 func (s *System) Arrive(conn *Connection) {
 	conn.SetSystem(s)
-	log_info("player %s has arrived at system %s", conn.PlayerName(), s.Label())
+	log_info("player %s has arrived at system %s", conn.Name(), s.Label())
 	if s.players == nil {
 		s.players = make(map[*Connection]bool, 8)
 	}

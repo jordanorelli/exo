@@ -12,7 +12,7 @@ import (
 type Connection struct {
 	net.Conn
 	*bufio.Reader
-	player          *Player
+	profile         *Profile
 	location        *System
 	dest            *System
 	travelRemaining int64
@@ -60,19 +60,19 @@ func (c *Connection) Login() {
 			continue
 		}
 		log_info("player connected: %v", name)
-		player, err := loadPlayer(name)
+		profile, err := loadProfile(name)
 		if err != nil {
-			log_error("could not read player: %v", err)
-			player = &Player{name: name}
-			if err := player.Create(); err != nil {
-				log_error("unable to create player record: %v", err)
+			log_error("could not read profile: %v", err)
+			profile = &Profile{name: name}
+			if err := profile.Create(); err != nil {
+				log_error("unable to create profile record: %v", err)
 			}
-			c.Printf("you look new around these parts, %s.\n", player.name)
+			c.Printf("you look new around these parts, %s.\n", profile.name)
 			c.Printf(`if you'd like a description of how to play, type the "help" command\n`)
-			c.player = player
+			c.profile = profile
 		} else {
-			c.player = player
-			c.Printf("welcome back, %s.\n", player.name)
+			c.profile = profile
+			c.Printf("welcome back, %s.\n", profile.name)
 		}
 		break
 	}
@@ -181,7 +181,7 @@ func (c *Connection) System() *System {
 }
 
 func (c *Connection) Close() error {
-	log_info("player disconnecting: %s", c.PlayerName())
+	log_info("player disconnecting: %s", c.Name())
 	currentGame.Quit(c)
 	if c.Conn != nil {
 		return c.Conn.Close()
@@ -189,11 +189,11 @@ func (c *Connection) Close() error {
 	return nil
 }
 
-func (c *Connection) PlayerName() string {
-	if c.player == nil {
+func (c *Connection) Name() string {
+	if c.profile == nil {
 		return ""
 	}
-	return c.player.name
+	return c.profile.name
 }
 
 func (c *Connection) InTransit() bool {
@@ -229,7 +229,7 @@ func (c *Connection) NextBomb() time.Duration {
 
 func (c *Connection) MadeKill(victim *Connection) {
 	if c == victim {
-		log_info("player %s commited suicide.", c.PlayerName())
+		log_info("player %s commited suicide.", c.Name())
 		return
 	}
 	c.kills += 1

@@ -131,7 +131,7 @@ var broadcastCommand = &Command{
 		msg := strings.Join(args, " ")
 		system := conn.System()
 		b := NewBroadcast(system, msg)
-		log_info("player %s send broadcast from system %s: %v\n", conn.PlayerName(), system.Label(), msg)
+		log_info("player %s send broadcast from system %s: %v\n", conn.Name(), system.Label(), msg)
 		currentGame.Register(b)
 	},
 }
@@ -178,7 +178,7 @@ var colonizeCommand = &Command{
 		if conn.money > 2000 {
 			conn.Withdraw(2000)
 			if system.colonizedBy != nil {
-				system.colonizedBy.Printf("your colony on %s has been stolen by %s\n", system.Label(), conn.PlayerName())
+				system.colonizedBy.Printf("your colony on %s has been stolen by %s\n", system.Label(), conn.Name())
 			}
 			system.colonizedBy = conn
 			conn.Printf("set up a mining colony on %s\n", conn.System().name)
@@ -244,7 +244,7 @@ var playersCommand = &Command{
 	help: "lists the connected players",
 	handler: func(conn *Connection, args ...string) {
 		for other, _ := range currentGame.connections {
-			conn.Printf("%v\n", other.PlayerName())
+			conn.Printf("%v\n", other.Name())
 		}
 	},
 }
