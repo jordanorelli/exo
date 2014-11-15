@@ -2,14 +2,8 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
-
-var idleCommands = CommandSet{
-	balCommand,
-	commandsCommand,
-	helpCommand,
-	playersCommand,
-}
 
 type IdleState struct {
 	CommandSuite
@@ -17,7 +11,32 @@ type IdleState struct {
 }
 
 func Idle(sys *System) ConnectionState {
-	return &IdleState{idleCommands, sys}
+	i := &IdleState{System: sys}
+	i.CommandSuite = CommandSet{
+		balCommand,
+		commandsCommand,
+		helpCommand,
+		playersCommand,
+		Command{
+			name:    "goto",
+			help:    "travel between star systems",
+			arity:   1,
+			handler: i.travelTo,
+		},
+		Command{
+			name:    "nearby",
+			help:    "list nearby star systems",
+			arity:   0,
+			handler: i.nearby,
+		},
+		Command{
+			name:    "bomb",
+			help:    "bomb another star system",
+			arity:   1,
+			handler: i.bomb,
+		},
+	}
+	return i
 }
 
 func (i *IdleState) String() string {
@@ -45,35 +64,40 @@ func (i *IdleState) travelTo(c *Connection, args ...string) {
 	c.SetState(NewTravel(c, i.System, dest))
 }
 
-func (i *IdleState) GetCommand(name string) *Command {
-	return idleCommands.GetCommand(name)
+func (i *IdleState) nearby(c *Connection, args ...string) {
+	neighbors, err := i.Nearby(25)
+	if err != nil {
+		log_error("unable to get neighbors: %v", err)
+		return
+	}
+	c.Printf("--------------------------------------------------------------------------------\n")
+	c.Printf("%-4s %-20s %s\n", "id", "name", "distance")
+	c.Printf("--------------------------------------------------------------------------------\n")
+	for _, neighbor := range neighbors {
+		other := index[neighbor.id]
+		c.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
+	}
+	c.Printf("--------------------------------------------------------------------------------\n")
 }
 
-// func (i *IdleState) RunCommand(c *Connection, name string, args ...string) ConnectionState {
-// 	switch name {
-// 	case "goto":
-// 		dest, err := GetSystem(args[0])
-// 		if err != nil {
-// 			c.Printf("%v\n", err)
-// 			break
-// 		}
-// 		return NewTravel(c, i.System, dest)
-// 	case "nearby":
-// 		neighbors, err := i.Nearby(25)
-// 		if err != nil {
-// 			log_error("unable to get neighbors: %v", err)
-// 			break
-// 		}
-// 		c.Printf("--------------------------------------------------------------------------------\n")
-// 		c.Printf("%-4s %-20s %s\n", "id", "name", "distance")
-// 		c.Printf("--------------------------------------------------------------------------------\n")
-// 		for _, neighbor := range neighbors {
-// 			other := index[neighbor.id]
-// 			c.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
-// 		}
-// 		c.Printf("--------------------------------------------------------------------------------\n")
-// 	default:
-// 		c.Printf("No such command: %v\n", name)
-// 	}
-// 	return i
-// }
+func (i *IdleState) bomb(c *Connection, args ...string) {
+	if c.bombs <= 0 {
+		c.Printf("Cannot send bomb: no bombs left!  Build more bombs!\n")
+		return
+	}
+	if time.Since(c.lastBomb) < 5*time.Second {
+		c.Printf("Cannot send bomb: bombs are reloading\n")
+		return
+	}
+
+	target, err := GetSystem(args[0])
+	if err != nil {
+		c.Printf("Cannot send bomb: %v\n", err)
+		return
+	}
+
+	c.bombs -= 1
+	c.lastBomb = time.Now()
+	bomb := NewBomb(c, i.System, target)
+	currentGame.Register(bomb)
+}

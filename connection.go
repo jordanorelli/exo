@@ -84,10 +84,19 @@ func (c *Connection) Tick(frame int64) {
 func (c *Connection) RunCommand(name string, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
-			c.Printf("shit is *really* fucked up.")
+			c.Printf("shit is *really* fucked up.\n")
 			log_error("recovered: %v", r)
 		}
 	}()
+	switch name {
+	case "commands":
+		commands := c.Commands()
+		for _, command := range commands {
+			c.Printf("%s\n", command.name)
+		}
+		return
+	}
+
 	cmd := c.GetCommand(name)
 	if cmd == nil {
 		c.Printf("No such command: %v\n", name)

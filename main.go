@@ -65,6 +65,10 @@ func durToFrames(dur time.Duration) int64 {
 	return int64(dur / options.frameLength)
 }
 
+func framesToDur(frames int64) time.Duration {
+	return options.frameLength * time.Duration(frames)
+}
+
 func main() {
 	flag.Parse()
 	dbconnect()
