@@ -14,15 +14,14 @@ type Bomb struct {
 	fti     int64 // frames to impact
 }
 
-func NewBomb(from *Connection, to *System) *Bomb {
-	origin := from.System()
-	dist := origin.DistanceTo(to)
+func NewBomb(conn *Connection, from, to *System) *Bomb {
+	dist := from.DistanceTo(to)
 	fti := int64(dist / (options.lightSpeed * options.bombSpeed))
 	eta := time.Duration(fti) * time.Second / time.Duration(options.frameRate)
-	log_info("bomb from: %s to: %s ETA: %v", from.Name(), to.Label(), eta)
+	log_info("bomb from: %v to: %v ETA: %v", from, to, eta)
 	return &Bomb{
-		profile: from,
-		origin:  origin,
+		profile: conn,
+		origin:  from,
 		target:  to,
 		fti:     fti,
 		start:   time.Now(),
@@ -38,10 +37,10 @@ func (b *Bomb) Tick(frame int64) {
 	if b.fti <= 0 {
 		b.target.Bombed(b.profile)
 		b.done = true
-		log_info("bomb went off on %s", b.target.Label())
+		log_info("bomb went off on %v", b.target)
 	}
 }
 
 func (b *Bomb) String() string {
-	return fmt.Sprintf("[bomb from: %s to: %s lived: %s]", b.origin.Label(), b.target.Label(), time.Since(b.start))
+	return fmt.Sprintf("[bomb from: %v to: %v lived: %s]", b.origin, b.target, time.Since(b.start))
 }

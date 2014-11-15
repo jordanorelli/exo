@@ -70,7 +70,7 @@ func (s *scan) hits() {
 }
 
 func (s *scan) hitSystem(sys *System, dist float64) scanResult {
-	sys.NotifyInhabitants("scan detected from %s\n", s.origin.Label())
+	sys.NotifyInhabitants("scan detected from %v\n", s.origin)
 	r := scanResult{
 		system:      sys,
 		colonizedBy: sys.colonizedBy,
@@ -95,7 +95,7 @@ func (s *scan) echos() {
 		if res.Empty() {
 			continue
 		}
-		s.origin.NotifyInhabitants("results from scan of %s:\n", res.system.Label())
+		s.origin.NotifyInhabitants("results from scan of %v:\n", res.system)
 		s.origin.NotifyInhabitants("\tdistance: %v\n", s.origin.DistanceTo(res.system))
 		inhabitants := res.playerNames()
 		if inhabitants != nil {

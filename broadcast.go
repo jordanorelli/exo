@@ -28,7 +28,7 @@ func (b *broadcast) Tick(frame int64) {
 		if b.dist < candidate.dist {
 			break
 		}
-		candidate.s.NotifyInhabitants("message received from system %s:\n\t%s\n", b.origin.Label(), b.message)
+		candidate.s.NotifyInhabitants("message received from system %v:\n\t%s\n", b.origin, b.message)
 	}
 }
 
@@ -37,5 +37,5 @@ func (b *broadcast) Dead() bool {
 }
 
 func (b *broadcast) String() string {
-	return fmt.Sprintf("[broadcast origin: %s message: %s]", b.origin.name, b.message)
+	return fmt.Sprintf("[broadcast origin: %v message: %s]", b.origin, b.message)
 }

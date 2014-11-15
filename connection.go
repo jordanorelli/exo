@@ -10,30 +10,17 @@ import (
 )
 
 type Connection struct {
-	net.Conn
 	*bufio.Reader
-	profile         *Profile
-	location        *System
-	dest            *System
-	travelRemaining int64
-	lastScan        time.Time
-	lastBomb        time.Time
-	kills           int
-	dead            bool
-	money           int
-	colonies        []*System
-	bombs           int
-	state           PlayerState // this is wrong...
+	net.Conn
+	ConnectionState
+	bombs    int
+	colonies []*System
+	kills    int
+	lastBomb time.Time
+	lastScan time.Time
+	money    int
+	profile  *Profile
 }
-
-type PlayerState int
-
-const (
-	idle PlayerState = iota
-	dead
-	inTransit
-	mining
-)
 
 func NewConnection(conn net.Conn) *Connection {
 	c := &Connection{
@@ -41,6 +28,7 @@ func NewConnection(conn net.Conn) *Connection {
 		Reader: bufio.NewReader(conn),
 		bombs:  1,
 	}
+	c.SetState(SpawnRandomly())
 	currentGame.Join(c)
 	return c
 }
@@ -84,59 +72,59 @@ func (c *Connection) Dead() bool {
 }
 
 func (c *Connection) Tick(frame int64) {
-	// fuck
-	switch c.state {
-	case idle:
-	case dead:
-	case inTransit:
-		c.travelRemaining -= 1
-		if c.travelRemaining == 0 {
-			c.land()
-		}
-	case mining:
-		sys := c.System()
-		if sys == nil {
-			log_error("a player is in the mining state with no system. what?")
-			break
-		}
-		if sys.money <= 0 {
-			c.Printf("system %s is all out of space duckets.\n", sys.Label())
-			c.StopMining()
-		} else {
-			c.Deposit(1)
-			sys.money -= 1
-		}
-	default:
-		log_error("connection %v has invalid state wtf", c)
-	}
-}
-
-func (c *Connection) TravelTo(dest *System) {
-	dist := c.System().DistanceTo(dest)
-	c.travelRemaining = int64(dist / (options.lightSpeed * options.playerSpeed))
-	t := time.Duration(c.travelRemaining) * (time.Second / time.Duration(options.frameRate))
-	c.Printf("traveling to: %s. ETA: %v\n", dest.Label(), t)
-	c.location.Leave(c)
-	c.location = nil
-	c.dest = dest
-	c.state = inTransit // fuck everything about this
-}
-
-func (c *Connection) SendBomb(target *System) {
-	if c.bombs <= 0 {
-		fmt.Fprintln(c, "cannot send bomb: no bombs left")
+	if c.ConnectionState == nil {
+		log_error("connected client has nil state.")
+		c.Printf("somehow you have a nil state.  I don't know what to do so I'm going to kick you off.")
+		c.Close()
 		return
 	}
-	if time.Since(c.lastBomb) < 5*time.Second {
-		fmt.Fprintln(c, "cannod send bomb: bombs are reloading")
+	c.SetState(c.ConnectionState.Tick(c, frame))
+}
+
+func (c *Connection) RunCommand(name string, args ...string) {
+	defer func() {
+		if r := recover(); r != nil {
+			c.Printf("shit is *really* fucked up.")
+			log_error("recovered: %v", r)
+		}
+	}()
+	cmd := c.GetCommand(name)
+	if cmd == nil {
+		c.Printf("No such command: %v\n", name)
 		return
 	}
-	c.bombs -= 1
-	c.lastBomb = time.Now()
-	bomb := NewBomb(c, target)
-	currentGame.Register(bomb)
-	c.Printf("sending bomb to system %v\n", target.Label())
+	cmd.handler(c, args...)
 }
+
+func (c *Connection) SetState(s ConnectionState) {
+	if c.ConnectionState == s {
+		return
+	}
+	log_info("set state: %v", s)
+	if c.ConnectionState != nil {
+		log_info("exit state: %v", c.ConnectionState)
+		c.ConnectionState.Exit(c)
+	}
+	log_info("enter state: %v", s)
+	s.Enter(c)
+	c.ConnectionState = s
+}
+
+// func (c *Connection) SendBomb(target *System) {
+// 	if c.bombs <= 0 {
+// 		fmt.Fprintln(c, "cannot send bomb: no bombs left")
+// 		return
+// 	}
+// 	if time.Since(c.lastBomb) < 5*time.Second {
+// 		fmt.Fprintln(c, "cannod send bomb: bombs are reloading")
+// 		return
+// 	}
+// 	c.bombs -= 1
+// 	c.lastBomb = time.Now()
+// 	bomb := NewBomb(c, target)
+// 	currentGame.Register(bomb)
+// 	c.Printf("sending bomb to system %v\n", target)
+// }
 
 func (c *Connection) ReadLines(out chan []string) {
 	defer close(out)
@@ -164,22 +152,6 @@ func (c *Connection) Printf(template string, args ...interface{}) (int, error) {
 	return fmt.Fprintf(c, template, args...)
 }
 
-func (c *Connection) land() {
-	c.Printf("you have arrived at %v\n", c.dest.Label())
-	c.location = c.dest
-	c.location.Arrive(c)
-	c.dest = nil
-	c.state = idle
-}
-
-func (c *Connection) SetSystem(s *System) {
-	c.location = s
-}
-
-func (c *Connection) System() *System {
-	return c.location
-}
-
 func (c *Connection) Close() error {
 	log_info("player disconnecting: %s", c.Name())
 	currentGame.Quit(c)
@@ -194,10 +166,6 @@ func (c *Connection) Name() string {
 		return ""
 	}
 	return c.profile.name
-}
-
-func (c *Connection) InTransit() bool {
-	return c.location == nil
 }
 
 func (c *Connection) RecordScan() {
@@ -238,26 +206,6 @@ func (c *Connection) MadeKill(victim *Connection) {
 	}
 }
 
-func (c *Connection) Mine() {
-	switch c.state {
-	case idle:
-		c.Printf("now mining %s. %v space duckets remaining.\n", c.System().name, c.System().money)
-		fmt.Fprintln(c, "(press enter to stop mining)")
-		c.state = mining
-	default:
-		c.Printf("no\n")
-	}
-}
-
-func (c *Connection) StopMining() {
-	c.Printf("done mining\n")
-	c.state = idle
-}
-
-func (c *Connection) IsMining() bool {
-	return c.state == mining
-}
-
 func (c *Connection) Withdraw(n int) {
 	c.money -= n
 }
@@ -273,25 +221,30 @@ func (c *Connection) Win(method string) {
 	currentGame.Win(c, method)
 }
 
-func (c *Connection) Die() {
-	c.Printf("you were bombed.  You will respawn in 1 minutes.\n")
-	c.dead = true
-	c.System().Leave(c)
-	time.AfterFunc(30*time.Second, func() {
-		c.Printf("respawn in 30 seconds.\n")
-	})
-	time.AfterFunc(time.Minute, c.Respawn)
+type ConnectionState interface {
+	CommandSuite
+	String() string
+	Enter(c *Connection)
+	Tick(c *Connection, frame int64) ConnectionState
+	Exit(c *Connection)
 }
 
-func (c *Connection) Respawn() {
-	c.dead = false
+// No-op enter struct, for composing connection states that have no interesitng
+// Enter mechanic.
+type NopEnter struct{}
 
-WUT:
-	s, err := randomSystem()
+func (n NopEnter) Enter(c *Connection) {}
+
+// No-op exit struct, for composing connection states that have no interesting
+// Exit mechanic.
+type NopExit struct{}
+
+func (n NopExit) Exit(c *Connection) {}
+
+func SpawnRandomly() ConnectionState {
+	sys, err := randomSystem()
 	if err != nil {
-		log_error("error in respawn: %v", err)
-		goto WUT
+		return NewErrorState(fmt.Errorf("unable to create idle state: %v", err))
 	}
-	s.Arrive(c)
-
+	return Idle(sys)
 }

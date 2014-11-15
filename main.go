@@ -11,15 +11,18 @@ import (
 )
 
 var options struct {
-	lightSpeed  float64
-	frameRate   int
-	moneySigma  float64
-	moneyMean   float64
-	playerSpeed float64
-	bombSpeed   float64
-	economic    int
-	debug       bool
-	speckPath   string
+	bombSpeed     float64
+	debug         bool
+	economic      int
+	frameRate     int
+	frameLength   time.Duration
+	lightSpeed    float64
+	moneyMean     float64
+	moneySigma    float64
+	playerSpeed   float64
+	respawnTime   time.Duration
+	respawnFrames int64
+	speckPath     string
 }
 
 var (
@@ -49,37 +52,30 @@ func handleConnection(conn *Connection) {
 	defer conn.Close()
 	conn.Login()
 
-	conn.Respawn()
-
 	c := make(chan []string)
 	go conn.ReadLines(c)
 
 	for parts := range c {
-		if isCommand(parts[0]) {
-			runCommand(conn, parts[0], parts[1:]...)
-			continue
-		}
-
-		switch parts[0] {
-		case "quit":
-			return
-		default:
-			conn.Printf("hmm I'm not sure I know that one.\n")
-		}
-
+		conn.RunCommand(parts[0], parts[1:]...)
 	}
+}
+
+// converts a duration in human time to a number of in-game frames
+func durToFrames(dur time.Duration) int64 {
+	return int64(dur / options.frameLength)
 }
 
 func main() {
 	flag.Parse()
 	dbconnect()
+	options.frameLength = time.Second / time.Duration(options.frameRate)
+	options.respawnFrames = durToFrames(options.respawnTime)
 
 	rand.Seed(time.Now().UnixNano())
 	info_log = log.New(os.Stdout, "[INFO] ", 0)
 	error_log = log.New(os.Stderr, "[ERROR] ", 0)
 
 	setupDb()
-	setupCommands()
 	listener, err := net.Listen("tcp", ":9220")
 	if err != nil {
 		bail(E_No_Port, "unable to start server: %v", err)
@@ -113,4 +109,5 @@ func init() {
 	flag.Float64Var(&options.moneySigma, "money-sigma", 1500, "standard deviation in money per system")
 	flag.BoolVar(&options.debug, "debug", false, "puts the game in debug mode")
 	flag.StringVar(&options.speckPath, "speck-path", "/projects/exo/expl.speck", "path to exoplanet speck file")
+	flag.DurationVar(&options.respawnTime, "respawn-time", 60*time.Second, "time for player respawn")
 }

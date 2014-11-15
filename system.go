@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -24,6 +25,22 @@ type System struct {
 	money       int64
 }
 
+func GetSystem(id string) (*System, error) {
+	idNum, err := strconv.Atoi(id)
+	if err == nil {
+		sys, ok := index[idNum]
+		if !ok {
+			return nil, fmt.Errorf("No such system: %v", idNum)
+		}
+		return sys, nil
+	}
+	sys, ok := nameIndex[id]
+	if !ok {
+		return nil, fmt.Errorf("No such system: %v", id)
+	}
+	return sys, nil
+}
+
 func (s *System) Tick(frame int64) {
 	if s.colonizedBy != nil {
 		s.colonizedBy.Deposit(1)
@@ -40,22 +57,22 @@ func (s *System) Reset() {
 }
 
 func (s *System) Arrive(conn *Connection) {
-	conn.SetSystem(s)
-	log_info("player %s has arrived at system %s", conn.Name(), s.Label())
+	// conn.SetSystem(s)
+	log_info("player %s has arrived at system %v", conn.Name(), s)
 	if s.players == nil {
 		s.players = make(map[*Connection]bool, 8)
 	}
 	s.players[conn] = true
 	if s.planets == 1 {
-		conn.Printf("you are in the system %s. There is %d planet here.\n", s.Label(), s.planets)
+		conn.Printf("you are in the system %v. There is %d planet here.\n", s, s.planets)
 	} else {
-		conn.Printf("you are in the system %s. There are %d planets here.\n", s.Label(), s.planets)
+		conn.Printf("you are in the system %v. There are %d planets here.\n", s, s.planets)
 	}
 }
 
 func (s *System) Leave(p *Connection) {
 	delete(s.players, p)
-	p.location = nil
+	// p.location = nil
 }
 
 func (s *System) NotifyInhabitants(template string, args ...interface{}) {
@@ -146,7 +163,7 @@ func (s *System) Distances() []Ray {
 
 func (s *System) Bombed(bomber *Connection) {
 	s.EachConn(func(conn *Connection) {
-		conn.Die()
+		// conn.Die()
 		bomber.MadeKill(conn)
 	})
 	if s.colonizedBy != nil {
@@ -174,13 +191,8 @@ func bombNotice(to_id, from_id int) {
 	})
 }
 
-// for players to read.
-func (s System) Label() string {
+func (s System) String() string {
 	return fmt.Sprintf("%s (id: %v)", s.name, s.id)
-}
-
-func (e System) String() string {
-	return fmt.Sprintf("<name: %s x: %v y: %v z: %v planets: %v>", e.name, e.x, e.y, e.z, e.planets)
 }
 
 type Neighbor struct {
@@ -247,7 +259,7 @@ func indexSystems() map[int]*System {
 		index[p.id] = &p
 		nameIndex[p.name] = &p
 		p.money = int64(rand.NormFloat64()*options.moneySigma + options.moneyMean)
-		log_info("seeded system %s with %v monies", p.Label(), p.money)
+		log_info("seeded system %v with %v monies", p, p.money)
 	}
 	return index
 }
@@ -257,8 +269,7 @@ func randomSystem() (*System, error) {
 	if n == 0 {
 		return nil, fmt.Errorf("no planets are known to exist")
 	}
-
 	pick := rand.Intn(n)
-	planet := index[pick]
-	return planet, nil
+	sys := index[pick]
+	return sys, nil
 }
