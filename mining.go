@@ -17,6 +17,7 @@ func Mine(sys *System) ConnectionState {
 		helpCommand,
 		playersCommand,
 		BroadcastCommand(sys),
+		NearbyCommand(sys),
 		Command{
 			name:    "stop",
 			help:    "stops mining",

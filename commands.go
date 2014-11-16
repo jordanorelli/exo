@@ -125,23 +125,29 @@ func BroadcastCommand(sys *System) Command {
 	}
 }
 
-// var colonizeCommand = &Command{
-// 	name: "colonize",
-// 	help: "establishes a mining colony on the current system",
-// 	handler: func(conn *Connection, arg ...string) {
-// 		system := conn.System()
-// 		if conn.money > 2000 {
-// 			conn.Withdraw(2000)
-// 			if system.colonizedBy != nil {
-// 				system.colonizedBy.Printf("your colony on %s has been stolen by %s\n", system.Label(), conn.Name())
-// 			}
-// 			system.colonizedBy = conn
-// 			conn.Printf("set up a mining colony on %s\n", conn.System().name)
-// 		} else {
-// 			conn.Printf("not enough money!  it costs 2000 duckets to start a mining colony\n")
-// 		}
-// 	},
-// }
+func NearbyCommand(sys *System) Command {
+	handler := func(c *Connection, args ...string) {
+		neighbors, err := sys.Nearby(25)
+		if err != nil {
+			log_error("unable to get neighbors: %v", err)
+			return
+		}
+		c.Printf("--------------------------------------------------------------------------------\n")
+		c.Printf("%-4s %-20s %s\n", "id", "name", "distance")
+		c.Printf("--------------------------------------------------------------------------------\n")
+		for _, neighbor := range neighbors {
+			other := index[neighbor.id]
+			c.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
+		}
+		c.Printf("--------------------------------------------------------------------------------\n")
+	}
+	return Command{
+		name:    "nearby",
+		help:    "list nearby star systems",
+		arity:   0,
+		handler: handler,
+	}
+}
 
 var winCommand = Command{
 	name:  "win",

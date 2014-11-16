@@ -18,17 +18,12 @@ func Idle(sys *System) ConnectionState {
 		helpCommand,
 		playersCommand,
 		BroadcastCommand(sys),
+		NearbyCommand(sys),
 		Command{
 			name:    "goto",
 			help:    "travel between star systems",
 			arity:   1,
 			handler: i.travelTo,
-		},
-		Command{
-			name:    "nearby",
-			help:    "list nearby star systems",
-			arity:   0,
-			handler: i.nearby,
 		},
 		Command{
 			name:    "bomb",
@@ -82,22 +77,6 @@ func (i *IdleState) travelTo(c *Connection, args ...string) {
 		return
 	}
 	c.SetState(NewTravel(c, i.System, dest))
-}
-
-func (i *IdleState) nearby(c *Connection, args ...string) {
-	neighbors, err := i.Nearby(25)
-	if err != nil {
-		log_error("unable to get neighbors: %v", err)
-		return
-	}
-	c.Printf("--------------------------------------------------------------------------------\n")
-	c.Printf("%-4s %-20s %s\n", "id", "name", "distance")
-	c.Printf("--------------------------------------------------------------------------------\n")
-	for _, neighbor := range neighbors {
-		other := index[neighbor.id]
-		c.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
-	}
-	c.Printf("--------------------------------------------------------------------------------\n")
 }
 
 func (i *IdleState) bomb(c *Connection, args ...string) {
