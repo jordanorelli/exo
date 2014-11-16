@@ -21,6 +21,7 @@ var options struct {
 	lightSpeed     float64
 	makeBombTime   time.Duration
 	makeColonyTime time.Duration
+	makeShieldTime time.Duration
 	moneyMean      float64
 	moneySigma     float64
 	playerSpeed    float64
@@ -126,4 +127,5 @@ func init() {
 	flag.DurationVar(&options.makeColonyTime, "colony-time", 15*time.Second, "time it takes to make a colony")
 	flag.IntVar(&options.startBombs, "start-bombs", 0, "number of bombs a player has at game start")
 	flag.IntVar(&options.startMoney, "start-money", 1000, "amount of money a player has to start")
+	flag.DurationVar(&options.makeShieldTime, "shield-time", 15*time.Second, "time it takes to make a shield")
 }

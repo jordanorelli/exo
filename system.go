@@ -15,6 +15,7 @@ var (
 )
 
 type System struct {
+	*Shield
 	id          int
 	x, y, z     float64
 	planets     int
@@ -45,6 +46,9 @@ func (s *System) Tick(frame int64) {
 	if s.colonizedBy != nil && s.money > 0 {
 		s.colonizedBy.Deposit(1)
 		s.money -= 1
+	}
+	if s.Shield != nil {
+		s.Shield.Tick(frame)
 	}
 }
 
@@ -166,6 +170,17 @@ func (s *System) Distances() []Ray {
 }
 
 func (s *System) Bombed(bomber *Connection, frame int64) {
+	if s.Shield != nil {
+		if s.Shield.Hit() {
+			s.EachConn(func(conn *Connection) {
+				conn.Printf("A bomb has hit %v but it was stopped by the system's shield.\n", s)
+				conn.Printf("Shield remaining: %v.\n", s.energy)
+				conn.Printf("Shield is recharing....\n")
+			})
+			return
+		}
+	}
+
 	s.EachConn(func(conn *Connection) {
 		conn.Die(frame)
 		bomber.MadeKill(conn)

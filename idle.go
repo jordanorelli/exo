@@ -130,6 +130,8 @@ func (i *IdleState) maek(c *Connection, args ...string) {
 	case "colony":
 		MakeColony(c, i.System)
 		return
+	case "shield":
+		MakeShield(c, i.System)
 	default:
 		c.Printf("I don't know how to make a %v.\n", args[0])
 	}
