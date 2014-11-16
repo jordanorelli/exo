@@ -14,6 +14,13 @@ func MakeColony(c *Connection, sys *System) {
 	c.money -= options.colonyCost
 	m := &MakeColonyState{
 		System: sys,
+		CommandSuite: CommandSet{
+			balCommand,
+			BroadcastCommand(sys),
+			helpCommand,
+			NearbyCommand(sys),
+			playersCommand,
+		},
 	}
 	c.SetState(m)
 }

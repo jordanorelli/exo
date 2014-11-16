@@ -137,7 +137,7 @@ func NearbyCommand(sys *System) Command {
 		c.Printf("--------------------------------------------------------------------------------\n")
 		for _, neighbor := range neighbors {
 			other := index[neighbor.id]
-			c.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
+			c.Printf("%-4d %-20s %-5.6v\n", other.id, other.name, neighbor.distance)
 		}
 		c.Printf("--------------------------------------------------------------------------------\n")
 	}

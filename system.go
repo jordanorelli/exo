@@ -42,8 +42,9 @@ func GetSystem(id string) (*System, error) {
 }
 
 func (s *System) Tick(frame int64) {
-	if s.colonizedBy != nil {
+	if s.colonizedBy != nil && s.money > 0 {
 		s.colonizedBy.Deposit(1)
+		s.money -= 1
 	}
 }
 

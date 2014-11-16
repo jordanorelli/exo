@@ -107,6 +107,7 @@ func (i *IdleState) mine(c *Connection, args ...string) {
 
 func (i *IdleState) info(c *Connection, args ...string) {
 	c.Printf("Currently idle on system %v\n", i.System)
+	c.Printf("Space duckets available: %v\n", i.money)
 }
 
 func (i *IdleState) scan(c *Connection, args ...string) {

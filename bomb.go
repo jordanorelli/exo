@@ -54,9 +54,10 @@ type MakeBombState struct {
 func MakeBomb(s *System) ConnectionState {
 	m := &MakeBombState{System: s}
 	m.CommandSuite = CommandSet{
-		BroadcastCommand(s),
 		balCommand,
+		BroadcastCommand(s),
 		helpCommand,
+		NearbyCommand(s),
 		playersCommand,
 	}
 	return m
