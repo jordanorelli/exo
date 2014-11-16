@@ -7,6 +7,8 @@ import (
 
 type IdleState struct {
 	CommandSuite
+	NopEnter
+	NopExit
 	*System
 }
 
@@ -35,6 +37,18 @@ func Idle(sys *System) ConnectionState {
 			arity:   1,
 			handler: i.bomb,
 		},
+		Command{
+			name:    "mine",
+			help:    "mine the current system for resources",
+			arity:   0,
+			handler: i.mine,
+		},
+		Command{
+			name:    "info",
+			help:    "gives you information about the current star system",
+			arity:   0,
+			handler: i.info,
+		},
 	}
 	return i
 }
@@ -43,16 +57,8 @@ func (i *IdleState) String() string {
 	return fmt.Sprintf("idle on %v", i.System)
 }
 
-func (i *IdleState) Enter(c *Connection) {
-	c.Printf("You have landed on %v.\n", i.System)
-}
-
 func (i *IdleState) Tick(c *Connection, frame int64) ConnectionState {
 	return i
-}
-
-func (i *IdleState) Exit(c *Connection) {
-	c.Printf("Now leaving %v.\n", i.System)
 }
 
 func (i *IdleState) travelTo(c *Connection, args ...string) {
@@ -100,4 +106,12 @@ func (i *IdleState) bomb(c *Connection, args ...string) {
 	c.lastBomb = time.Now()
 	bomb := NewBomb(c, i.System, target)
 	currentGame.Register(bomb)
+}
+
+func (i *IdleState) mine(c *Connection, args ...string) {
+	c.SetState(Mine(i.System))
+}
+
+func (i *IdleState) info(c *Connection, args ...string) {
+	c.Printf("Currently idle on system %v\n", i.System)
 }

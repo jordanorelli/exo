@@ -208,14 +208,6 @@ var commandsCommand = Command{
 // 	},
 // }
 
-// var mineCommand = &Command{
-// 	name: "mine",
-// 	help: "mines the current system for resources",
-// 	handler: func(conn *Connection, args ...string) {
-// 		conn.Mine()
-// 	},
-// }
-
 // var colonizeCommand = &Command{
 // 	name: "colonize",
 // 	help: "establishes a mining colony on the current system",

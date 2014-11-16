@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sort"
 	"strings"
 	"time"
 )
@@ -90,10 +91,18 @@ func (c *Connection) RunCommand(name string, args ...string) {
 	}()
 	switch name {
 	case "commands":
+		c.Line()
 		commands := c.Commands()
-		for _, command := range commands {
-			c.Printf("%s\n", command.name)
+		names := make([]string, len(commands))
+		for i := range commands {
+			names[i] = commands[i].name
 		}
+		sort.Strings(names)
+		for _, name := range names {
+			cmd := c.GetCommand(name)
+			c.Printf("%-20s%s\n", name, cmd.help)
+		}
+		c.Line()
 		return
 	}
 
@@ -155,6 +164,10 @@ func (c *Connection) ReadLines(out chan []string) {
 		}
 		out <- strings.Split(line, " ")
 	}
+}
+
+func (c *Connection) Line() {
+	c.Printf("--------------------------------------------------------------------------------\n")
 }
 
 func (c *Connection) Printf(template string, args ...interface{}) (int, error) {
