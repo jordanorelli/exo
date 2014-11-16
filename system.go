@@ -58,6 +58,9 @@ func (s *System) Reset() {
 
 func (s *System) Arrive(conn *Connection) {
 	// conn.SetSystem(s)
+	if s.players[conn] {
+		return
+	}
 	log_info("player %s has arrived at system %v", conn.Name(), s)
 	if s.players == nil {
 		s.players = make(map[*Connection]bool, 8)
@@ -161,9 +164,9 @@ func (s *System) Distances() []Ray {
 	return s.distances
 }
 
-func (s *System) Bombed(bomber *Connection) {
+func (s *System) Bombed(bomber *Connection, frame int64) {
 	s.EachConn(func(conn *Connection) {
-		// conn.Die()
+		conn.Die(frame)
 		bomber.MadeKill(conn)
 	})
 	if s.colonizedBy != nil {

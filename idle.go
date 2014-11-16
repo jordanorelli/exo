@@ -7,7 +7,6 @@ import (
 
 type IdleState struct {
 	CommandSuite
-	NopEnter
 	NopExit
 	*System
 }
@@ -16,7 +15,6 @@ func Idle(sys *System) ConnectionState {
 	i := &IdleState{System: sys}
 	i.CommandSuite = CommandSet{
 		balCommand,
-		commandsCommand,
 		helpCommand,
 		playersCommand,
 		Command{
@@ -49,8 +47,18 @@ func Idle(sys *System) ConnectionState {
 			arity:   0,
 			handler: i.info,
 		},
+		Command{
+			name:    "scan",
+			help:    "scans the galaxy for signs of life",
+			arity:   0,
+			handler: i.scan,
+		},
 	}
 	return i
+}
+
+func (i *IdleState) Enter(c *Connection) {
+	i.System.Arrive(c)
 }
 
 func (i *IdleState) String() string {
@@ -114,4 +122,12 @@ func (i *IdleState) mine(c *Connection, args ...string) {
 
 func (i *IdleState) info(c *Connection, args ...string) {
 	c.Printf("Currently idle on system %v\n", i.System)
+}
+
+func (i *IdleState) scan(c *Connection, args ...string) {
+	if time.Since(c.lastScan) < 1*time.Minute {
+		return
+	}
+	c.Printf("Scanning the galaxy for signs of life...\n")
+	currentGame.Register(NewScan(i.System))
 }

@@ -128,22 +128,6 @@ func (c *Connection) SetState(s ConnectionState) {
 	c.ConnectionState = s
 }
 
-// func (c *Connection) SendBomb(target *System) {
-// 	if c.bombs <= 0 {
-// 		fmt.Fprintln(c, "cannot send bomb: no bombs left")
-// 		return
-// 	}
-// 	if time.Since(c.lastBomb) < 5*time.Second {
-// 		fmt.Fprintln(c, "cannod send bomb: bombs are reloading")
-// 		return
-// 	}
-// 	c.bombs -= 1
-// 	c.lastBomb = time.Now()
-// 	bomb := NewBomb(c, target)
-// 	currentGame.Register(bomb)
-// 	c.Printf("sending bomb to system %v\n", target)
-// }
-
 func (c *Connection) ReadLines(out chan []string) {
 	defer close(out)
 
@@ -241,6 +225,10 @@ func (c *Connection) Deposit(n int) {
 
 func (c *Connection) Win(method string) {
 	currentGame.Win(c, method)
+}
+
+func (c *Connection) Die(frame int64) {
+	c.SetState(NewDeadState(frame))
 }
 
 type ConnectionState interface {

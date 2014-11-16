@@ -157,19 +157,6 @@ var commandsCommand = Command{
 	},
 }
 
-// var scanCommand = &Command{
-// 	name: "scan",
-// 	help: "super duper scan",
-// 	handler: func(conn *Connection, args ...string) {
-// 		if !conn.CanScan() {
-// 			conn.Printf("scanners are still recharging.  Can scan again in %v\n", conn.NextScan())
-// 			return
-// 		}
-// 		currentGame.Register(NewScan(conn.System()))
-// 		conn.RecordScan()
-// 	},
-// }
-
 // var broadcastCommand = &Command{
 // 	name: "broadcast",
 // 	help: "broadcast a message for all systems to hear",

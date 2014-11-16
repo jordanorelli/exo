@@ -35,7 +35,7 @@ func (b *Bomb) Dead() bool {
 func (b *Bomb) Tick(frame int64) {
 	b.fti -= 1
 	if b.fti <= 0 {
-		b.target.Bombed(b.profile)
+		b.target.Bombed(b.profile, frame)
 		b.done = true
 		log_info("bomb went off on %v", b.target)
 	}
