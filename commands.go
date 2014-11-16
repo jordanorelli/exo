@@ -49,51 +49,6 @@ func (c CommandSet) Commands() []Command {
 	return []Command(c)
 }
 
-// var gotoCommand = &Command{
-// 	name:  "goto",
-// 	help:  "travel between systems",
-// 	arity: 1,
-// 	handler: func(c *Connection, args ...string) {
-// 		dest, err := GetSystem(args[0])
-// 		if err != nil {
-// 			c.Printf("%v\n", err)
-// 			break
-// 		}
-// 		return NewTravel(c, i.System, dest)
-// 	},
-// }
-
-// var infoCommand = &Command{
-// 	name: "info",
-// 	help: "gives you some info about your current position",
-// 	handler: func(conn *Connection, args ...string) {
-// 		conn.Printf("current planet: %v\n", conn.System())
-// 		conn.Printf("bombs: %d\n", conn.bombs)
-// 		conn.Printf("money: %d space duckets\n", conn.money)
-// 	},
-// }
-
-// var nearbyCommand = &Command{
-// 	name: "nearby",
-// 	help: "list objects nearby",
-// 	handler: func(conn *Connection, args ...string) {
-// 		system := conn.System()
-// 		neighbors, err := system.Nearby(25)
-// 		if err != nil {
-// 			log_error("unable to get neighbors: %v", err)
-// 			return
-// 		}
-// 		conn.Printf("--------------------------------------------------------------------------------\n")
-// 		conn.Printf("%-4s %-20s %s\n", "id", "name", "distance")
-// 		conn.Printf("--------------------------------------------------------------------------------\n")
-// 		for _, neighbor := range neighbors {
-// 			other := index[neighbor.id]
-// 			conn.Printf("%-4d %-20s %v\n", other.id, other.name, neighbor.distance)
-// 		}
-// 		conn.Printf("--------------------------------------------------------------------------------\n")
-// 	},
-// }
-
 var helpCommand = Command{
 	name: "help",
 	help: "helpful things to help you",
@@ -169,32 +124,6 @@ var commandsCommand = Command{
 // 	},
 // }
 
-// var gotoCommand = &Command{
-// 	name: "goto",
-// 	help: "moves to a different system, specified by either name or ID",
-// 	handler: func(conn *Connection, args ...string) {
-// 		dest_name := strings.Join(args, " ")
-// 		to, ok := nameIndex[dest_name]
-// 		if ok {
-// 			conn.TravelTo(to)
-// 			return
-// 		}
-//
-// 		id_n, err := strconv.Atoi(dest_name)
-// 		if err != nil {
-// 			conn.Printf(`hmm, I don't know a system by the name "%s", try something else`, dest_name)
-// 			return
-// 		}
-//
-// 		to, ok = index[id_n]
-// 		if !ok {
-// 			conn.Printf(`oh dear, there doesn't seem to be a system with id %d`, id_n)
-// 			return
-// 		}
-// 		conn.TravelTo(to)
-// 	},
-// }
-
 // var colonizeCommand = &Command{
 // 	name: "colonize",
 // 	help: "establishes a mining colony on the current system",
@@ -221,48 +150,6 @@ var winCommand = Command{
 		conn.Win("win-command")
 	},
 }
-
-// var bombCommand = &Command{
-// 	name: "bomb",
-// 	help: "bombs a system, with a big space bomb",
-// 	handler: func(conn *Connection, args ...string) {
-// 		dest_name := strings.Join(args, " ")
-// 		to, ok := nameIndex[dest_name]
-// 		if ok {
-// 			conn.SendBomb(to)
-// 			return
-// 		}
-//
-// 		id_n, err := strconv.Atoi(dest_name)
-// 		if err != nil {
-// 			conn.Printf(`hmm, I don't know a system by the name "%s", try something else\n`, dest_name)
-// 			return
-// 		}
-//
-// 		to, ok = index[id_n]
-// 		if !ok {
-// 			conn.Printf(`oh dear, there doesn't seem to be a system with id %d\n`, id_n)
-// 			return
-// 		}
-// 		conn.SendBomb(to)
-// 	},
-// }
-
-// var mkBombCommand = &Command{
-// 	name: "mkbomb",
-// 	help: "make a bomb.  Costs 500 space duckets",
-// 	handler: func(conn *Connection, args ...string) {
-// 		if conn.money < 500 {
-// 			conn.Printf("not enough money!  Bombs cost 500 space duckets to build, you only have %d in the bank.\n", conn.money)
-// 			return
-// 		}
-// 		conn.Withdraw(500)
-// 		conn.bombs += 1
-// 		conn.Printf("built a bomb!\n")
-// 		conn.Printf("bombs: %d\n", conn.bombs)
-// 		conn.Printf("money: %d space duckets\n", conn.money)
-// 	},
-// }
 
 var playersCommand = Command{
 	name: "players",
