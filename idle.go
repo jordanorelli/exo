@@ -17,6 +17,7 @@ func Idle(sys *System) ConnectionState {
 		balCommand,
 		helpCommand,
 		playersCommand,
+		BroadcastCommand(sys),
 		Command{
 			name:    "goto",
 			help:    "travel between star systems",

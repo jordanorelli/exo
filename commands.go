@@ -112,17 +112,18 @@ var commandsCommand = Command{
 	},
 }
 
-// var broadcastCommand = &Command{
-// 	name: "broadcast",
-// 	help: "broadcast a message for all systems to hear",
-// 	handler: func(conn *Connection, args ...string) {
-// 		msg := strings.Join(args, " ")
-// 		system := conn.System()
-// 		b := NewBroadcast(system, msg)
-// 		log_info("player %s send broadcast from system %s: %v\n", conn.Name(), system.Label(), msg)
-// 		currentGame.Register(b)
-// 	},
-// }
+func BroadcastCommand(sys *System) Command {
+	return Command{
+		name: "broadcast",
+		help: "broadcast a message for all systems to hear",
+		handler: func(c *Connection, args ...string) {
+			msg := strings.Join(args, " ")
+			b := NewBroadcast(sys, msg)
+			log_info("player %s send broadcast from system %v: %v\n", c.Name(), sys, msg)
+			currentGame.Register(b)
+		},
+	}
+}
 
 // var colonizeCommand = &Command{
 // 	name: "colonize",
