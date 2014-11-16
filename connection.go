@@ -85,7 +85,8 @@ func (c *Connection) Tick(frame int64) {
 func (c *Connection) RunCommand(name string, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
-			c.Printf("shit is *really* fucked up.\n")
+			c.Printf("something is broken.  Log this as a ticket!\n")
+			c.Printf("recovered: %v\n", r)
 			log_error("recovered: %v", r)
 		}
 	}()

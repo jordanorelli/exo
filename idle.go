@@ -138,6 +138,7 @@ func (i *IdleState) scan(c *Connection, args ...string) {
 	currentGame.Register(NewScan(i.System))
 }
 
+// "make" is already a keyword
 func (i *IdleState) maek(c *Connection, args ...string) {
 	switch args[0] {
 	case "bomb":
@@ -146,6 +147,9 @@ func (i *IdleState) maek(c *Connection, args ...string) {
 			return
 		}
 		c.SetState(MakeBomb(i.System))
+	case "colony":
+		MakeColony(c, i.System)
+		return
 	default:
 		c.Printf("I don't know how to make a %v.\n", args[0])
 	}

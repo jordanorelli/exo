@@ -11,20 +11,22 @@ import (
 )
 
 var options struct {
-	bombCost      int
-	bombSpeed     float64
-	debug         bool
-	economic      int
-	frameLength   time.Duration
-	frameRate     int
-	lightSpeed    float64
-	makeBombTime  time.Duration
-	moneyMean     float64
-	moneySigma    float64
-	playerSpeed   float64
-	respawnFrames int64
-	respawnTime   time.Duration
-	speckPath     string
+	bombCost       int
+	bombSpeed      float64
+	debug          bool
+	economic       int
+	frameLength    time.Duration
+	colonyCost     int
+	frameRate      int
+	lightSpeed     float64
+	makeBombTime   time.Duration
+	makeColonyTime time.Duration
+	moneyMean      float64
+	moneySigma     float64
+	playerSpeed    float64
+	respawnFrames  int64
+	respawnTime    time.Duration
+	speckPath      string
 }
 
 var (
@@ -118,4 +120,6 @@ func init() {
 	flag.DurationVar(&options.respawnTime, "respawn-time", 60*time.Second, "time for player respawn")
 	flag.DurationVar(&options.makeBombTime, "bomb-time", 5*time.Second, "time it takes to make a bomb")
 	flag.IntVar(&options.bombCost, "bomb-cost", 500, "price of a bomb")
+	flag.IntVar(&options.colonyCost, "colony-cost", 2000, "price of a colony")
+	flag.DurationVar(&options.makeColonyTime, "colony-time", 15*time.Second, "time it takes to make a colony")
 }
