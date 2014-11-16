@@ -53,6 +53,11 @@ func Idle(sys *System) ConnectionState {
 			arity:   0,
 			handler: i.scan,
 		},
+		Command{
+			name:    "make",
+			help:    "makes things",
+			handler: i.maek,
+		},
 	}
 	return i
 }
@@ -130,4 +135,13 @@ func (i *IdleState) scan(c *Connection, args ...string) {
 	}
 	c.Printf("Scanning the galaxy for signs of life...\n")
 	currentGame.Register(NewScan(i.System))
+}
+
+func (i *IdleState) maek(c *Connection, args ...string) {
+	switch args[0] {
+	case "bomb":
+		c.SetState(MakeBomb(i.System))
+	default:
+		c.Printf("I don't know how to make a %v.\n", args[0])
+	}
 }

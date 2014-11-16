@@ -17,6 +17,7 @@ var options struct {
 	frameRate     int
 	frameLength   time.Duration
 	lightSpeed    float64
+	makeBombTime  time.Duration
 	moneyMean     float64
 	moneySigma    float64
 	playerSpeed   float64
@@ -114,4 +115,5 @@ func init() {
 	flag.BoolVar(&options.debug, "debug", false, "puts the game in debug mode")
 	flag.StringVar(&options.speckPath, "speck-path", "/projects/exo/expl.speck", "path to exoplanet speck file")
 	flag.DurationVar(&options.respawnTime, "respawn-time", 60*time.Second, "time for player respawn")
+	flag.DurationVar(&options.makeBombTime, "bomb-time", 5*time.Second, "time it takes to make a bomb")
 }

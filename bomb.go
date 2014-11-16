@@ -44,3 +44,33 @@ func (b *Bomb) Tick(frame int64) {
 func (b *Bomb) String() string {
 	return fmt.Sprintf("[bomb from: %v to: %v lived: %s]", b.origin, b.target, time.Since(b.start))
 }
+
+type MakeBombState struct {
+	CommandSuite
+	*System
+	start int64
+}
+
+func MakeBomb(s *System) ConnectionState {
+	m := &MakeBombState{System: s}
+	return m
+}
+
+func (m *MakeBombState) Enter(c *Connection) {
+	c.Printf("Making a bomb...\n")
+}
+
+func (m *MakeBombState) Tick(c *Connection, frame int64) ConnectionState {
+	if m.start == 0 {
+		m.start = frame
+	}
+	if framesToDur(frame-m.start) >= options.makeBombTime {
+		return Idle(m.System)
+	}
+	return m
+}
+
+func (m *MakeBombState) Exit(c *Connection) {
+	c.bombs += 1
+	c.Printf("Done!  You now have %v bombs.\n", c.bombs)
+}
