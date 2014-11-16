@@ -140,6 +140,10 @@ func (i *IdleState) scan(c *Connection, args ...string) {
 func (i *IdleState) maek(c *Connection, args ...string) {
 	switch args[0] {
 	case "bomb":
+		if c.money < options.bombCost {
+			c.Printf("Not enough money!  Bombs costs %v but you only have %v space duckets.  Mine more space duckets!\n", options.bombCost, c.money)
+			return
+		}
 		c.SetState(MakeBomb(i.System))
 	default:
 		c.Printf("I don't know how to make a %v.\n", args[0])

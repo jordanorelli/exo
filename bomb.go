@@ -53,11 +53,15 @@ type MakeBombState struct {
 
 func MakeBomb(s *System) ConnectionState {
 	m := &MakeBombState{System: s}
+	m.CommandSuite = CommandSet{
+		balCommand,
+	}
 	return m
 }
 
 func (m *MakeBombState) Enter(c *Connection) {
 	c.Printf("Making a bomb...\n")
+	c.money -= options.bombCost
 }
 
 func (m *MakeBombState) Tick(c *Connection, frame int64) ConnectionState {
