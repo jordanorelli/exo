@@ -28,6 +28,7 @@ var options struct {
 	respawnTime    time.Duration
 	speckPath      string
 	startBombs     int
+	startMoney     int
 }
 
 var (
@@ -124,5 +125,5 @@ func init() {
 	flag.IntVar(&options.colonyCost, "colony-cost", 2000, "price of a colony")
 	flag.DurationVar(&options.makeColonyTime, "colony-time", 15*time.Second, "time it takes to make a colony")
 	flag.IntVar(&options.startBombs, "start-bombs", 0, "number of bombs a player has at game start")
-
+	flag.IntVar(&options.startMoney, "start-money", 1000, "amount of money a player has to start")
 }
