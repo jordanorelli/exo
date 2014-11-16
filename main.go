@@ -27,6 +27,7 @@ var options struct {
 	playerSpeed    float64
 	respawnFrames  int64
 	respawnTime    time.Duration
+	scanTime       time.Duration
 	speckPath      string
 	startBombs     int
 	startMoney     int
@@ -128,4 +129,5 @@ func init() {
 	flag.IntVar(&options.startBombs, "start-bombs", 0, "number of bombs a player has at game start")
 	flag.IntVar(&options.startMoney, "start-money", 1000, "amount of money a player has to start")
 	flag.DurationVar(&options.makeShieldTime, "shield-time", 15*time.Second, "time it takes to make a shield")
+	flag.DurationVar(&options.scanTime, "scan-recharge", 1*time.Minute, "time it takes for scanners to recharge")
 }

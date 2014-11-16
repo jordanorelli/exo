@@ -177,10 +177,10 @@ func (c *Connection) Name() string {
 }
 
 func (c *Connection) RecordScan() {
-	fmt.Fprintln(c, "scanning known systems for signs of life")
+	c.Printf("scanning known systems for signs of life\n")
 	c.lastScan = time.Now()
-	time.AfterFunc(1*time.Minute, func() {
-		fmt.Fprintln(c, "scanner ready")
+	time.AfterFunc(options.scanTime, func() {
+		c.Printf("scanner ready\n")
 	})
 }
 
@@ -192,11 +192,11 @@ func (c *Connection) RecordBomb() {
 }
 
 func (c *Connection) CanScan() bool {
-	return time.Since(c.lastScan) > 1*time.Minute
+	return time.Since(c.lastScan) > options.scanTime
 }
 
 func (c *Connection) NextScan() time.Duration {
-	return -time.Since(c.lastScan.Add(time.Minute))
+	return -time.Since(c.lastScan.Add(options.scanTime))
 }
 
 func (c *Connection) NextBomb() time.Duration {

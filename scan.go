@@ -15,10 +15,12 @@ type scan struct {
 }
 
 type scanResult struct {
-	system      *System
-	dist        float64
-	players     map[*Connection]bool
-	colonizedBy *Connection
+	system       *System
+	dist         float64
+	players      map[*Connection]bool
+	colonizedBy  *Connection
+	shielded     bool
+	shieldEnergy float64
 }
 
 func (r *scanResult) Empty() bool {
@@ -75,6 +77,10 @@ func (s *scan) hitSystem(sys *System, dist float64) scanResult {
 		system:      sys,
 		colonizedBy: sys.colonizedBy,
 		dist:        dist * 2.0,
+		shielded:    sys.Shield != nil,
+	}
+	if sys.Shield != nil {
+		r.shieldEnergy = sys.Shield.energy
 	}
 	if sys.players != nil {
 		r.players = make(map[*Connection]bool, len(sys.players))
@@ -97,6 +103,10 @@ func (s *scan) echos() {
 		}
 		s.origin.NotifyInhabitants("results from scan of %v:\n", res.system)
 		s.origin.NotifyInhabitants("\tdistance: %v\n", s.origin.DistanceTo(res.system))
+		s.origin.NotifyInhabitants("\tshielded: %v\n", res.shielded)
+		if res.shielded {
+			s.origin.NotifyInhabitants("\tshield energy: %v\n", res.shieldEnergy)
+		}
 		inhabitants := res.playerNames()
 		if inhabitants != nil {
 			s.origin.NotifyInhabitants("\tinhabitants: %v\n", inhabitants)
@@ -104,5 +114,6 @@ func (s *scan) echos() {
 		if res.colonizedBy != nil {
 			s.origin.NotifyInhabitants("\tcolonized by: %v\n", res.colonizedBy.Name())
 		}
+
 	}
 }
