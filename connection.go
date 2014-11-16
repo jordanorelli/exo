@@ -27,7 +27,7 @@ func NewConnection(conn net.Conn) *Connection {
 	c := &Connection{
 		Conn:   conn,
 		Reader: bufio.NewReader(conn),
-		bombs:  1,
+		bombs:  options.startBombs,
 	}
 	c.SetState(SpawnRandomly())
 	currentGame.Join(c)
