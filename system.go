@@ -183,6 +183,7 @@ func (s *System) Bombed(bomber *Connection, frame int64) {
 
 	s.EachConn(func(conn *Connection) {
 		conn.Die(frame)
+		s.Leave(conn)
 		bomber.MadeKill(conn)
 	})
 	if s.colonizedBy != nil {
