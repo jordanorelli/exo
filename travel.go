@@ -48,6 +48,7 @@ func (t *TravelState) Enter(c *Connection) {
 	c.Printf("Trip duration: %v\n", t.tripTime())
 	c.Printf("Current time: %v\n", time.Now())
 	c.Printf("ETA: %v\n", t.eta())
+	t.start.Leave(c)
 }
 
 func (t *TravelState) Tick(c *Connection, frame int64) ConnectionState {
@@ -60,6 +61,7 @@ func (t *TravelState) Tick(c *Connection, frame int64) ConnectionState {
 
 func (t *TravelState) Exit(c *Connection) {
 	c.Printf("You have arrived at %v.\n", t.dest)
+	t.dest.Arrive(c)
 }
 
 func (t *TravelState) String() string {
