@@ -7,7 +7,9 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"strings"
 	"time"
+	// "golang.org/x/oauth2"
 )
 
 var options struct {
@@ -24,6 +26,7 @@ var options struct {
 	makeShieldTime time.Duration
 	moneyMean      float64
 	moneySigma     float64
+	oauthToken     string
 	playerSpeed    float64
 	respawnFrames  int64
 	respawnTime    time.Duration
@@ -48,6 +51,10 @@ func log_info(template string, args ...interface{}) {
 }
 
 func bail(status int, template string, args ...interface{}) {
+	if !strings.HasSuffix(template, "\n") {
+		template += "\n"
+	}
+
 	if status == 0 {
 		fmt.Fprintf(os.Stdout, template, args...)
 	} else {
@@ -79,6 +86,10 @@ func framesToDur(frames int64) time.Duration {
 
 func main() {
 	flag.Parse()
+	if options.oauthToken == "" {
+		bail(E_Missing_Slack_OAuth_Token, "missing slack oauth token")
+	}
+
 	dbconnect()
 	options.frameLength = time.Second / time.Duration(options.frameRate)
 	options.respawnFrames = durToFrames(options.respawnTime)
@@ -130,4 +141,5 @@ func init() {
 	flag.IntVar(&options.startMoney, "start-money", 1000, "amount of money a player has to start")
 	flag.DurationVar(&options.makeShieldTime, "shield-time", 15*time.Second, "time it takes to make a shield")
 	flag.DurationVar(&options.scanTime, "scan-recharge", 1*time.Minute, "time it takes for scanners to recharge")
+	flag.StringVar(&options.oauthToken, "oauth-token", "", "slack bot user oauth access token")
 }

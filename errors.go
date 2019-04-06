@@ -11,6 +11,7 @@ const (
 	E_No_DB
 	E_No_Port
 	E_Bad_Duration
+	E_Missing_Slack_OAuth_Token
 )
 
 type errorGroup []error
