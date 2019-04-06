@@ -120,7 +120,7 @@ func init() {
 	flag.Float64Var(&options.moneyMean, "money-mean", 10000, "mean amount of money on a system")
 	flag.Float64Var(&options.moneySigma, "money-sigma", 1500, "standard deviation in money per system")
 	flag.BoolVar(&options.debug, "debug", false, "puts the game in debug mode")
-	flag.StringVar(&options.speckPath, "speck-path", "/projects/exo/expl.speck", "path to exoplanet speck file")
+	flag.StringVar(&options.speckPath, "speck-path", "./expl.speck", "path to exoplanet speck file")
 	flag.DurationVar(&options.respawnTime, "respawn-time", 60*time.Second, "time for player respawn")
 	flag.DurationVar(&options.makeBombTime, "bomb-time", 5*time.Second, "time it takes to make a bomb")
 	flag.IntVar(&options.bombCost, "bomb-cost", 500, "price of a bomb")
