@@ -88,10 +88,12 @@ func main() {
 	error_log = log.New(os.Stderr, "[ERROR] ", 0)
 
 	setupDb()
-	listener, err := net.Listen("tcp", ":9220")
+	addr := ":9220"
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
+	log_info("listening on %s", addr)
 
 	go func() {
 		for {

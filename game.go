@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 )
 
 type Game struct {
-	id          Id
+	id          string
 	start       time.Time
 	end         time.Time
 	done        chan interface{}
@@ -30,9 +31,20 @@ func gamesTable() {
 	}
 }
 
+func init() { rand.Seed(time.Now().UnixNano()) }
+
+func newID() string {
+	chars := []rune("ABCDEEEEEEEEFGHJJJJJJJKMNPQQQQQQQRTUVWXXXXXYZZZZZ234677777789")
+	id := make([]rune, 0, 4)
+	for i := 0; i < cap(id); i++ {
+		id = append(id, chars[rand.Intn(len(chars))])
+	}
+	return string(id)
+}
+
 func NewGame() *Game {
 	game := &Game{
-		id:          NewId(),
+		id:          newID(),
 		start:       time.Now(),
 		done:        make(chan interface{}),
 		connections: make(map[*Connection]bool, 32),
@@ -61,7 +73,7 @@ func (g *Game) Create() error {
         (id, start)
         values
         (?, ?)
-    ;`, g.id.String(), g.start)
+    ;`, g.id, g.start)
 	if err != nil {
 		return fmt.Errorf("error writing sqlite insert statement to create game: %v")
 	}
