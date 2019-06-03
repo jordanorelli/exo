@@ -56,14 +56,6 @@ func NewGame() *Game {
 	for _, system := range index {
 		game.Register(system)
 	}
-	if currentGame != nil {
-		log_info("passing %d connections...", len(currentGame.connections))
-		for conn, _ := range currentGame.connections {
-			log_info("moving player %s to new game", conn.Name())
-			currentGame.Quit(conn)
-			game.Join(conn)
-		}
-	}
 	return game
 }
 
@@ -90,7 +82,9 @@ func (g *Game) Store() error {
 }
 
 func (g *Game) Join(conn *Connection) {
+	log_info("Player %s has joined game %s", conn.Name(), g.id)
 	g.connections[conn] = true
+	g.Register(conn)
 }
 
 func (g *Game) Quit(conn *Connection) {

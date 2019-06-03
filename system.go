@@ -279,7 +279,7 @@ func indexSystems() map[int]*System {
 		index[p.id] = &p
 		nameIndex[p.name] = &p
 		p.money = int64(rand.NormFloat64()*options.moneySigma + options.moneyMean)
-		log_info("seeded system %v with %v monies", p, p.money)
+		// log_info("seeded system %v with %v monies", p, p.money)
 	}
 	return index
 }

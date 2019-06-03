@@ -120,7 +120,7 @@ func BroadcastCommand(sys *System) Command {
 			msg := strings.Join(args, " ")
 			b := NewBroadcast(sys, msg)
 			log_info("player %s send broadcast from system %v: %v\n", c.Name(), sys, msg)
-			currentGame.Register(b)
+			c.game.Register(b)
 		},
 	}
 }
@@ -162,7 +162,7 @@ var playersCommand = Command{
 	name: "players",
 	help: "lists the connected players",
 	handler: func(conn *Connection, args ...string) {
-		for other, _ := range currentGame.connections {
+		for other, _ := range conn.game.connections {
 			conn.Printf("%v\n", other.Name())
 		}
 	},

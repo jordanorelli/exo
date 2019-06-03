@@ -34,9 +34,8 @@ var options struct {
 }
 
 var (
-	info_log    *log.Logger
-	error_log   *log.Logger
-	currentGame *Game
+	info_log  *log.Logger
+	error_log *log.Logger
 )
 
 func log_error(template string, args ...interface{}) {
@@ -58,7 +57,6 @@ func bail(status int, template string, args ...interface{}) {
 
 func handleConnection(conn *Connection) {
 	defer conn.Close()
-	conn.Login()
 
 	c := make(chan []string)
 	go conn.ReadLines(c)
@@ -94,14 +92,6 @@ func main() {
 		bail(E_No_Port, "unable to start server: %v", err)
 	}
 	log_info("listening on %s", addr)
-
-	go func() {
-		for {
-			log_info("starting new game")
-			currentGame = NewGame()
-			currentGame.Run()
-		}
-	}()
 
 	for {
 		conn, err := listener.Accept()

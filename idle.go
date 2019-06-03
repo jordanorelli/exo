@@ -98,7 +98,7 @@ func (i *IdleState) bomb(c *Connection, args ...string) {
 	c.bombs -= 1
 	c.lastBomb = time.Now()
 	bomb := NewBomb(c, i.System, target)
-	currentGame.Register(bomb)
+	c.game.Register(bomb)
 }
 
 func (i *IdleState) mine(c *Connection, args ...string) {
@@ -115,7 +115,7 @@ func (i *IdleState) scan(c *Connection, args ...string) {
 		return
 	}
 	c.Printf("Scanning the galaxy for signs of life...\n")
-	currentGame.Register(NewScan(i.System))
+	c.game.Register(NewScan(i.System))
 }
 
 // "make" is already a keyword

@@ -12,6 +12,7 @@ import (
 
 type Connection struct {
 	*bufio.Reader
+	game *Game
 	net.Conn
 	ConnectionState
 	bombs    int
@@ -30,8 +31,7 @@ func NewConnection(conn net.Conn) *Connection {
 		bombs:  options.startBombs,
 		money:  options.startMoney,
 	}
-	c.SetState(SpawnRandomly())
-	currentGame.Join(c)
+	c.SetState(new(LobbyState))
 	return c
 }
 
@@ -45,6 +45,7 @@ func (c *Connection) Login() {
 			log_error("player failed to connect: %v", err)
 			return
 		}
+
 		if !ValidName(name) {
 			c.Printf("that name is illegal.\n")
 			continue
@@ -66,7 +67,6 @@ func (c *Connection) Login() {
 		}
 		break
 	}
-	currentGame.Register(c)
 }
 
 func (c *Connection) Dead() bool {
@@ -162,7 +162,7 @@ func (c *Connection) Printf(template string, args ...interface{}) (int, error) {
 
 func (c *Connection) Close() error {
 	log_info("player disconnecting: %s", c.Name())
-	currentGame.Quit(c)
+	c.game.Quit(c)
 	if c.Conn != nil {
 		return c.Conn.Close()
 	}
@@ -226,7 +226,7 @@ func (c *Connection) Deposit(n int) {
 }
 
 func (c *Connection) Win(method string) {
-	currentGame.Win(c, method)
+	c.game.Win(c, method)
 }
 
 func (c *Connection) Die(frame int64) {
@@ -259,4 +259,64 @@ func SpawnRandomly() ConnectionState {
 		return NewErrorState(fmt.Errorf("unable to create idle state: %v", err))
 	}
 	return Idle(sys)
+}
+
+type LobbyState struct {
+	NopExit
+}
+
+func (st *LobbyState) String() string { return "Lobby" }
+
+func (st *LobbyState) Enter(c *Connection) {
+	c.Login()
+}
+
+func (st *LobbyState) Tick(c *Connection, frame int64) ConnectionState { return st }
+
+func (st *LobbyState) Commands() []Command {
+	return []Command{newGameCommand, joinGameCommand}
+}
+
+func (st *LobbyState) GetCommand(name string) *Command {
+	switch name {
+	case "new":
+		return &newGameCommand
+	case "join":
+		return &joinGameCommand
+	default:
+		return nil
+	}
+}
+
+var newGameCommand = Command{
+	name:     "new",
+	help:     "starts a new game",
+	arity:    0,
+	variadic: false,
+	handler: func(c *Connection, args ...string) {
+		c.Printf("Starting a new game...\n")
+		game := gm.NewGame()
+		log_info("Created game: %s", game.id)
+		go game.Run()
+		c.game = game
+		c.Printf("Now playing in game: %s\n\n", game.id)
+		c.Line()
+		c.game.Join(c)
+		c.SetState(SpawnRandomly())
+	},
+	debug: false,
+}
+
+var joinGameCommand = Command{
+	name:     "join",
+	help:     "joins an existing game",
+	arity:    1,
+	variadic: false,
+	handler: func(c *Connection, args ...string) {
+		id := args[0]
+		c.game = gm.Get(id)
+		c.SetState(SpawnRandomly())
+		c.game.Join(c)
+	},
+	debug: false,
 }
