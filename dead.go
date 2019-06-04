@@ -29,3 +29,7 @@ func (d *DeadState) Exit(c *Connection) {
 func (d *DeadState) String() string {
 	return "dead"
 }
+
+func (d *DeadState) PrintStatus(c *Connection) {
+	panic("not done")
+}

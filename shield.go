@@ -46,6 +46,10 @@ func (m *MakeShieldState) String() string {
 	return fmt.Sprintf("Making shield on %v", m.System)
 }
 
+func (m *MakeShieldState) PrintStatus(c *Connection) {
+	panic("not done")
+}
+
 type Shield struct {
 	energy float64
 }

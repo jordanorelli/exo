@@ -40,6 +40,8 @@ func (c CommandSet) GetCommand(name string) *Command {
 		return &helpCommand
 	case "commands":
 		return &commandsCommand
+	case "status":
+		return &statusCommand
 	}
 	for _, cmd := range c {
 		if cmd.name == name {
@@ -50,7 +52,7 @@ func (c CommandSet) GetCommand(name string) *Command {
 }
 
 func (c CommandSet) Commands() []Command {
-	return append([]Command(c), helpCommand, commandsCommand)
+	return append([]Command(c), statusCommand, helpCommand, commandsCommand)
 }
 
 var helpCommand = Command{
@@ -97,6 +99,14 @@ are farther away take longer to communicate with.
 			}
 			conn.Printf("%v: %v\n", cmdName, cmd.help)
 		}
+	},
+}
+
+var statusCommand = Command{
+	name: "status",
+	help: "display your current status",
+	handler: func(conn *Connection, args ...string) {
+		conn.ConnectionState.PrintStatus(conn)
 	},
 }
 

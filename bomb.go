@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -80,4 +81,18 @@ func (m *MakeBombState) Tick(c *Connection, frame int64) ConnectionState {
 func (m *MakeBombState) Exit(c *Connection) {
 	c.bombs += 1
 	c.Printf("Done!  You now have %v bombs.\n", c.bombs)
+}
+
+func (m *MakeBombState) PrintStatus(c *Connection) {
+	elapsedFrames := c.game.frame - m.start
+	elapsedDur := framesToDur(elapsedFrames)
+
+	msg := fmt.Sprintf(`
+Currently making a bomb!
+
+Current System:       %s
+Build time elapsed:   %v
+Build time remaining: %v
+`, m.System, elapsedDur, options.makeBombTime-elapsedDur)
+	c.Printf(strings.TrimSpace(msg))
 }

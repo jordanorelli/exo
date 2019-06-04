@@ -62,3 +62,7 @@ func (e *ErrorState) String() string {
 func (e *ErrorState) RunCommand(c *Connection, name string, args ...string) ConnectionState {
 	return e
 }
+
+func (e *ErrorState) PrintStatus(c *Connection) {
+	panic("not done")
+}

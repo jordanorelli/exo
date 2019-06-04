@@ -135,3 +135,7 @@ func (i *IdleState) maek(c *Connection, args ...string) {
 		c.Printf("I don't know how to make a %v.\n", args[0])
 	}
 }
+
+func (i *IdleState) PrintStatus(c *Connection) {
+	panic("not done")
+}

@@ -92,6 +92,10 @@ func (st *LobbyState) Enter(c *Connection) {
 
 func (st *LobbyState) Tick(c *Connection, frame int64) ConnectionState { return st }
 
+func (st *LobbyState) PrintStatus(c *Connection) {
+	panic("not done")
+}
+
 var newGameCommand = Command{
 	name:     "new",
 	help:     "starts a new game",

@@ -67,6 +67,10 @@ func (t *TravelState) String() string {
 	return fmt.Sprintf("Traveling from %v to %v", t.start, t.dest)
 }
 
+func (t *TravelState) PrintStatus(c *Connection) {
+	panic("not done")
+}
+
 func (t *TravelState) progress(c *Connection, args ...string) {
 	c.Printf("%v\n", t.travelled/t.dist)
 }

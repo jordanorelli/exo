@@ -70,3 +70,7 @@ func (m *MiningState) info(c *Connection, args ...string) {
 	c.Printf("Mined so far: %v\n", m.mined)
 	c.Printf("Remaining space duckets on %v: %v\n", m.System, m.money)
 }
+
+func (m *MiningState) PrintStatus(c *Connection) {
+	panic("not done")
+}

@@ -48,3 +48,7 @@ func (m *MakeColonyState) Exit(c *Connection) {
 	m.System.colonizedBy = c
 	c.Printf("Established colony on %v.\n", m.System)
 }
+
+func (m *MakeColonyState) PrintStatus(c *Connection) {
+	panic("not done")
+}
