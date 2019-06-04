@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"text/template"
 )
 
 var commandRegistry map[string]*Command
@@ -101,6 +102,27 @@ are farther away take longer to communicate with.
 		}
 	},
 }
+
+type status struct {
+	State       string
+	Balance     int
+	Bombs       int
+	Kills       int
+	Location    string
+	Description string
+}
+
+var statusTemplate = template.Must(template.New("status").Parse(`
+********************************************************************************
+Current State: {{.State}}
+Balance:       {{.Balance}}
+Bombs:         {{.Bombs}}
+Kills:         {{.Kills}}
+Location:      {{.Location}}
+
+{{.Description}}
+********************************************************************************
+`))
 
 var statusCommand = Command{
 	name: "status",

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"text/template"
 	"time"
 )
 
@@ -33,20 +34,35 @@ func NewTravel(c *Connection, start, dest *System) ConnectionState {
 			help:  "displays estimated time of arrival",
 			arity: 0,
 			handler: func(c *Connection, args ...string) {
-				c.Printf("Remaining: %v\n", t.remaining())
-				c.Printf("Current time: %v\n", time.Now())
-				c.Printf("ETA: %v\n", t.eta())
+				c.Printf("%v\n", t.remaining())
 			},
 		},
 	}
 	return t
 }
 
+var enterTravelTemplate = template.Must(template.New("enter-travel").Parse(`
+Departing:       {{.Departing}}
+Destination:     {{.Destination}}
+Total Trip Time: {{.Duration}}
+Current Time:    {{.Time}}
+ETA:             {{.ETA}}
+`))
+
 func (t *TravelState) Enter(c *Connection) {
-	c.Printf("Leaving %v, bound for %v.\n", t.start, t.dest)
-	c.Printf("Trip duration: %v\n", t.tripTime())
-	c.Printf("Current time: %v\n", time.Now())
-	c.Printf("ETA: %v\n", t.eta())
+	enterTravelTemplate.Execute(c, struct {
+		Departing   *System
+		Destination *System
+		Duration    time.Duration
+		Time        time.Time
+		ETA         time.Time
+	}{
+		t.start,
+		t.dest,
+		t.tripTime(),
+		time.Now(),
+		t.eta(),
+	})
 	t.start.Leave(c)
 }
 
@@ -68,7 +84,15 @@ func (t *TravelState) String() string {
 }
 
 func (t *TravelState) PrintStatus(c *Connection) {
-	panic("not done")
+	desc := fmt.Sprintf("Traveling from %v to %v", t.start, t.dest)
+	statusTemplate.Execute(c, status{
+		State:       "In Transit",
+		Balance:     c.money,
+		Bombs:       c.bombs,
+		Kills:       c.kills,
+		Location:    fmt.Sprintf("%s -> %s", t.start, t.dest),
+		Description: desc,
+	})
 }
 
 func (t *TravelState) progress(c *Connection, args ...string) {
