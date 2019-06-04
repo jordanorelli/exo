@@ -10,7 +10,6 @@ func MakeShield(c *Connection, s *System) {
 		CommandSuite: CommandSet{
 			balCommand,
 			BroadcastCommand(s),
-			helpCommand,
 			NearbyCommand(s),
 			playersCommand,
 		},

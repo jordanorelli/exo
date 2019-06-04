@@ -17,7 +17,6 @@ func MakeColony(c *Connection, sys *System) {
 		CommandSuite: CommandSet{
 			balCommand,
 			BroadcastCommand(sys),
-			helpCommand,
 			NearbyCommand(sys),
 			playersCommand,
 		},

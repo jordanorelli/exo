@@ -56,7 +56,6 @@ func MakeBomb(s *System) ConnectionState {
 	m.CommandSuite = CommandSet{
 		balCommand,
 		BroadcastCommand(s),
-		helpCommand,
 		NearbyCommand(s),
 		playersCommand,
 	}

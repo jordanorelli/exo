@@ -35,6 +35,12 @@ func (c Command) Commands() []Command {
 type CommandSet []Command
 
 func (c CommandSet) GetCommand(name string) *Command {
+	switch name {
+	case "help":
+		return &helpCommand
+	case "commands":
+		return &commandsCommand
+	}
 	for _, cmd := range c {
 		if cmd.name == name {
 			return &cmd
@@ -44,7 +50,7 @@ func (c CommandSet) GetCommand(name string) *Command {
 }
 
 func (c CommandSet) Commands() []Command {
-	return []Command(c)
+	return append([]Command(c), helpCommand, commandsCommand)
 }
 
 var helpCommand = Command{
@@ -73,10 +79,9 @@ attempting to communicate from one star system to another, it takes time for
 the light of your message to reach the other star systems.  Star systems that
 are farther away take longer to communicate with.
         `
-		msg = strings.TrimSpace(msg)
-		fmt.Fprintln(conn, msg)
-
 		if len(args) == 0 {
+			msg = strings.TrimSpace(msg)
+			fmt.Fprintln(conn, msg)
 			fmt.Fprint(conn, "\n")
 			conn.Line()
 			fmt.Fprint(conn, "\n")
@@ -85,8 +90,8 @@ are farther away take longer to communicate with.
 			return
 		}
 		for _, cmdName := range args {
-			cmd, ok := commandRegistry[cmdName]
-			if !ok {
+			cmd := conn.GetCommand(cmdName)
+			if cmd == nil {
 				conn.Printf("no such command: %v\n", cmdName)
 				continue
 			}

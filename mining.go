@@ -14,7 +14,6 @@ func Mine(sys *System) ConnectionState {
 	m := &MiningState{System: sys}
 	m.CommandSuite = CommandSet{
 		balCommand,
-		helpCommand,
 		playersCommand,
 		BroadcastCommand(sys),
 		NearbyCommand(sys),

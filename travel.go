@@ -20,7 +20,6 @@ func NewTravel(c *Connection, start, dest *System) ConnectionState {
 		dist:  start.DistanceTo(dest),
 	}
 	t.CommandSuite = CommandSet{
-		helpCommand,
 		playersCommand,
 		balCommand,
 		Command{

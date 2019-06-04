@@ -15,7 +15,6 @@ func Idle(sys *System) ConnectionState {
 	i := &IdleState{System: sys}
 	i.CommandSuite = CommandSet{
 		balCommand,
-		helpCommand,
 		playersCommand,
 		BroadcastCommand(sys),
 		NearbyCommand(sys),

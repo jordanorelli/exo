@@ -44,8 +44,6 @@ type LobbyState struct {
 func EnterLobby() ConnectionState {
 	return &LobbyState{
 		CommandSuite: CommandSet{
-			commandsCommand,
-			helpCommand,
 			newGameCommand,
 			joinGameCommand,
 		},
