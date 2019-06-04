@@ -128,11 +128,12 @@ func NearbyCommand(sys *System) Command {
 			return
 		}
 		c.Printf("--------------------------------------------------------------------------------\n")
-		c.Printf("%-4s %-20s %s\n", "id", "name", "distance")
+		c.Printf("%-4s %-20s %-12s %s\n", "id", "name", "distance", "trip time")
 		c.Printf("--------------------------------------------------------------------------------\n")
 		for _, neighbor := range neighbors {
 			other := index[neighbor.id]
-			c.Printf("%-4d %-20s %-5.6v\n", other.id, other.name, neighbor.distance)
+			dur := NewTravel(c, sys, other).(*TravelState).tripTime()
+			c.Printf("%-4d %-20s %-12.6v %v\n", other.id, other.name, neighbor.distance, dur)
 		}
 		c.Printf("--------------------------------------------------------------------------------\n")
 	}
