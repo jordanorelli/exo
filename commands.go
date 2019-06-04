@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
-	// "strconv"
 	"strings"
 )
 
@@ -54,31 +52,34 @@ var helpCommand = Command{
 	help: "helpful things to help you",
 	handler: func(conn *Connection, args ...string) {
 		msg := `
-Star Dragons is a stupid name, but it's the name that Brian suggested.  It has
-nothing to do with Dragons.
+Exocolonus is a game of cunning text-based, real-time strategy.  You play as
+some kind of space-faring entity, faring space in your inspecific space-faring
+vessel.  If you want a big one, it's big; if you want a small one, it's small.
+If you want a pink one, it's pink, if you want a black one, it's black.  And so
+on, and so forth.  It is the space craft of your dreams.  Or perhaps you are
+one of those insect-like alien races and you play as the queen.  Yeah, that's
+the ticket!  You're the biggest baddest queen bug in space.
 
-Anyway, Star Dragons is a game of cunning text-based, real-time strategy.  You
-play as some kind of space-faring entity, faring space in your inspecific
-space-faring vessel.  If you want a big one, it's big; if you want a small one,
-it's small.  If you want a pink one, it's pink, if you want a black one, it's
-black.  And so on, and so forth.  It is the space craft of your dreams.  Or
-perhaps you are one of those insect-like alien races and you play as the queen.
-Yeah, that's the ticket!  You're the biggest baddest queen bug in space.
+In Exocolonus, you issue your spacecraft textual commands to control it.  The
+objective of the game is to be the first person or alien or bug or magical
+space ponycorn to eradicate three enemy species.  Right now that is the only
+win condition.
 
-In Star Dragons, you issue your spacecraft (which is *not* called a Dragon)
-textual commands to control it.  The objective of the game is to be the first
-person or alien or bug or magical space ponycorn to eradicate three enemy
-species.  Right now that is the only win condition.
-
-All of the systems present in Star Dragons are named and positioned after known
-exoplanet systems.  When attempting to communicate from one star system to
-another, it takes time for the light of your message to reach the other star
-systems.  Star systems that are farther away take longer to communicate with.
+All of the systems present in Exocolonus are named and positioned after known
+exoplanet systems.  Each star system in Exocolonus is a real star system that
+has been researched by astronomers, and the number of planets in each system
+corresponds to the number of  known exoplanets in those systems. When
+attempting to communicate from one star system to another, it takes time for
+the light of your message to reach the other star systems.  Star systems that
+are farther away take longer to communicate with.
         `
 		msg = strings.TrimSpace(msg)
 		fmt.Fprintln(conn, msg)
 
 		if len(args) == 0 {
+			fmt.Fprint(conn, "\n")
+			conn.Line()
+			fmt.Fprint(conn, "\n")
 			fmt.Fprintln(conn, `use the "commands" command for a list of commands.`)
 			fmt.Fprintln(conn, `use "help [command-name]" to get info for a specific command.`)
 			return
@@ -94,22 +95,11 @@ systems.  Star systems that are farther away take longer to communicate with.
 	},
 }
 
+// this isn't a real command it just puts command in the list of commands, this
+// is weird and circular, this is a special case.
 var commandsCommand = Command{
 	name: "commands",
 	help: "gives you a handy list of commands",
-	handler: func(conn *Connection, args ...string) {
-		names := make([]string, 0, len(commandRegistry))
-		for name, _ := range commandRegistry {
-			names = append(names, name)
-		}
-		sort.Strings(names)
-		fmt.Fprintln(conn, "--------------------------------------------------------------------------------")
-		for _, name := range names {
-			cmd := commandRegistry[name]
-			conn.Printf("%-16s %s\n", name, cmd.help)
-		}
-		fmt.Fprintln(conn, "--------------------------------------------------------------------------------")
-	},
 }
 
 func BroadcastCommand(sys *System) Command {
