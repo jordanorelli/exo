@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"text/template"
 	"time"
@@ -45,8 +46,6 @@ var enterTravelTemplate = template.Must(template.New("enter-travel").Parse(`
 Departing:       {{.Departing}}
 Destination:     {{.Destination}}
 Total Trip Time: {{.Duration}}
-Current Time:    {{.Time}}
-ETA:             {{.ETA}}
 `))
 
 func (t *TravelState) Enter(c *Connection) {
@@ -54,20 +53,45 @@ func (t *TravelState) Enter(c *Connection) {
 		Departing   *System
 		Destination *System
 		Duration    time.Duration
-		Time        time.Time
-		ETA         time.Time
 	}{
 		t.start,
 		t.dest,
 		t.tripTime(),
-		time.Now(),
-		t.eta(),
 	})
 	t.start.Leave(c)
 }
 
 func (t *TravelState) Tick(c *Connection, frame int64) ConnectionState {
-	t.travelled += options.playerSpeed * options.lightSpeed
+	dt := options.playerSpeed * options.lightSpeed
+
+	segmentLength := t.dist / 18
+	x := t.travelled
+	for x > segmentLength {
+		x -= segmentLength
+	}
+	if x < dt {
+		c.Printf("%v", t.start.name)
+		var buf bytes.Buffer
+		segment := int(t.travelled / t.dist * 18)
+		buf.WriteRune('|')
+		for i := 0; i < 18; i++ {
+			switch {
+			case i == segment:
+				buf.WriteRune('>')
+			case i == segment-1:
+				buf.WriteRune('=')
+			case i < segment:
+				buf.WriteRune('-')
+			default:
+				buf.WriteRune(' ')
+			}
+		}
+		buf.WriteRune('|')
+		c.Write(buf.Bytes())
+		c.Printf("at %v in %v\n", t.dest.name, t.remaining())
+	}
+
+	t.travelled += dt
 	if t.travelled >= t.dist {
 		return Idle(t.dest)
 	}
@@ -86,6 +110,7 @@ func (t *TravelState) String() string {
 func (t *TravelState) PrintStatus(c *Connection) {
 	desc := fmt.Sprintf("Traveling from %v to %v", t.start, t.dest)
 	statusTemplate.Execute(c, status{
+		GameCode:    c.game.id,
 		State:       "In Transit",
 		Balance:     c.money,
 		Bombs:       c.bombs,

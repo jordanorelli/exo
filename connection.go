@@ -59,18 +59,7 @@ func (c *Connection) RunCommand(name string, args ...string) {
 	}()
 	switch name {
 	case "commands":
-		c.Line()
-		commands := c.Commands()
-		names := make([]string, len(commands))
-		for i := range commands {
-			names[i] = commands[i].name
-		}
-		sort.Strings(names)
-		for _, name := range names {
-			cmd := c.GetCommand(name)
-			c.Printf("%-20s%s\n", name, cmd.help)
-		}
-		c.Line()
+		c.ListCommands()
 		return
 	}
 
@@ -80,6 +69,24 @@ func (c *Connection) RunCommand(name string, args ...string) {
 		return
 	}
 	cmd.handler(c, args...)
+}
+
+func (c *Connection) ListCommands() {
+	c.Printf("\n")
+	c.Line()
+	c.Printf("- Available Commands\n")
+	c.Line()
+	commands := c.Commands()
+	names := make([]string, len(commands))
+	for i := range commands {
+		names[i] = commands[i].name
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		cmd := c.GetCommand(name)
+		c.Printf("%-20s%s\n", name, cmd.help)
+	}
+	c.Printf("\n")
 }
 
 func (c *Connection) SetState(s ConnectionState) {
@@ -92,8 +99,8 @@ func (c *Connection) SetState(s ConnectionState) {
 		c.ConnectionState.Exit(c)
 	}
 	log_info("enter state: %v", s)
-	s.Enter(c)
 	c.ConnectionState = s
+	s.Enter(c)
 }
 
 func (c *Connection) ReadLines(out chan []string) {

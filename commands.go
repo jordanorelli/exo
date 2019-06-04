@@ -104,6 +104,7 @@ are farther away take longer to communicate with.
 }
 
 type status struct {
+	GameCode    string
 	State       string
 	Balance     int
 	Bombs       int
@@ -113,7 +114,8 @@ type status struct {
 }
 
 var statusTemplate = template.Must(template.New("status").Parse(`
-********************************************************************************
+--------------------------------------------------------------------------------
+Current Game:  {{.GameCode}}
 Current State: {{.State}}
 Balance:       {{.Balance}}
 Bombs:         {{.Bombs}}
@@ -121,7 +123,7 @@ Kills:         {{.Kills}}
 Location:      {{.Location}}
 
 {{.Description}}
-********************************************************************************
+
 `))
 
 var statusCommand = Command{

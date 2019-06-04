@@ -32,6 +32,7 @@ var banner = `
                                       O      *        '       .
         
 
+A game of dark cunning in the vast unknown of space by Jordan Orelli.
 
 ##############################################################################################
 `
@@ -87,7 +88,7 @@ func (st *LobbyState) Enter(c *Connection) {
 		}
 		break
 	}
-
+	c.ListCommands()
 }
 
 func (st *LobbyState) Tick(c *Connection, frame int64) ConnectionState { return st }
