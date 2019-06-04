@@ -58,7 +58,7 @@ func (st *LobbyState) Enter(c *Connection) {
 	time.Sleep(1 * time.Second)
 
 	for {
-		c.Printf("\n\nwhat is your name, adventurer?\n")
+		c.Printf("\n\nWhat is your name, adventurer?\n")
 		name, err := c.ReadString('\n')
 		if err == nil {
 			name = strings.TrimSpace(name)
@@ -99,7 +99,7 @@ func (st *LobbyState) PrintStatus(c *Connection) {
 
 var newGameCommand = Command{
 	name:     "new",
-	help:     "starts a new game",
+	summary:  "starts a new game",
 	arity:    0,
 	variadic: false,
 	handler: func(c *Connection, args ...string) {
@@ -118,7 +118,7 @@ var newGameCommand = Command{
 
 var joinGameCommand = Command{
 	name:     "join",
-	help:     "joins an existing game",
+	summary:  "joins an existing game",
 	arity:    1,
 	variadic: false,
 	handler: func(c *Connection, args ...string) {

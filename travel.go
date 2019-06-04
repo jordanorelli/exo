@@ -26,14 +26,14 @@ func NewTravel(c *Connection, start, dest *System) ConnectionState {
 		balCommand,
 		Command{
 			name:    "progress",
-			help:    "displays how far you are along your travel",
+			summary: "displays how far you are along your travel",
 			arity:   0,
 			handler: t.progress,
 		},
 		Command{
-			name:  "eta",
-			help:  "displays estimated time of arrival",
-			arity: 0,
+			name:    "eta",
+			summary: "displays estimated time of arrival",
+			arity:   0,
 			handler: func(c *Connection, args ...string) {
 				c.Printf("%v\n", t.remaining())
 			},

@@ -84,7 +84,7 @@ func (c *Connection) ListCommands() {
 	sort.Strings(names)
 	for _, name := range names {
 		cmd := c.GetCommand(name)
-		c.Printf("%-20s%s\n", name, cmd.help)
+		c.Printf("%-20s%s\n", name, cmd.summary)
 	}
 	c.Printf("\n")
 }

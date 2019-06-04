@@ -10,7 +10,7 @@ var commandRegistry map[string]*Command
 
 type Command struct {
 	name     string
-	help     string
+	summary  string
 	arity    int
 	variadic bool
 	handler  func(*Connection, ...string)
@@ -57,8 +57,8 @@ func (c CommandSet) Commands() []Command {
 }
 
 var helpCommand = Command{
-	name: "help",
-	help: "helpful things to help you",
+	name:    "help",
+	summary: "helpful things to help you",
 	handler: func(conn *Connection, args ...string) {
 		msg := `
 Exocolonus is a game of cunning text-based, real-time strategy.  You play as
@@ -98,7 +98,7 @@ are farther away take longer to communicate with.
 				conn.Printf("no such command: %v\n", cmdName)
 				continue
 			}
-			conn.Printf("%v: %v\n", cmdName, cmd.help)
+			conn.Printf("%v: %v\n", cmdName, cmd.summary)
 		}
 	},
 }
@@ -127,8 +127,8 @@ Location:      {{.Location}}
 `))
 
 var statusCommand = Command{
-	name: "status",
-	help: "display your current status",
+	name:    "status",
+	summary: "display your current status",
 	handler: func(conn *Connection, args ...string) {
 		conn.ConnectionState.PrintStatus(conn)
 	},
@@ -137,14 +137,14 @@ var statusCommand = Command{
 // this isn't a real command it just puts command in the list of commands, this
 // is weird and circular, this is a special case.
 var commandsCommand = Command{
-	name: "commands",
-	help: "gives you a handy list of commands",
+	name:    "commands",
+	summary: "gives you a handy list of commands",
 }
 
 func BroadcastCommand(sys *System) Command {
 	return Command{
-		name: "broadcast",
-		help: "broadcast a message for all systems to hear",
+		name:    "broadcast",
+		summary: "broadcast a message for all systems to hear",
 		handler: func(c *Connection, args ...string) {
 			msg := strings.Join(args, " ")
 			b := NewBroadcast(sys, msg)
@@ -173,24 +173,24 @@ func NearbyCommand(sys *System) Command {
 	}
 	return Command{
 		name:    "nearby",
-		help:    "list nearby star systems",
+		summary: "list nearby star systems",
 		arity:   0,
 		handler: handler,
 	}
 }
 
 var winCommand = Command{
-	name:  "win",
-	help:  "win the game.",
-	debug: true,
+	name:    "win",
+	summary: "win the game.",
+	debug:   true,
 	handler: func(conn *Connection, args ...string) {
 		conn.Win("win-command")
 	},
 }
 
 var playersCommand = Command{
-	name: "players",
-	help: "lists the connected players",
+	name:    "players",
+	summary: "lists the connected players",
 	handler: func(conn *Connection, args ...string) {
 		for other, _ := range conn.game.connections {
 			conn.Printf("%v\n", other.Name())
@@ -199,8 +199,8 @@ var playersCommand = Command{
 }
 
 var balCommand = Command{
-	name: "bal",
-	help: "displays your current balance in space duckets",
+	name:    "bal",
+	summary: "displays your current balance in space duckets",
 	handler: func(conn *Connection, args ...string) {
 		fmt.Fprintln(conn, conn.money)
 	},

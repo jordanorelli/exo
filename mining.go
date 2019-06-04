@@ -19,13 +19,13 @@ func Mine(sys *System) ConnectionState {
 		NearbyCommand(sys),
 		Command{
 			name:    "stop",
-			help:    "stops mining",
+			summary: "stops mining",
 			arity:   0,
 			handler: m.stop,
 		},
 		Command{
 			name:    "info",
-			help:    "gives you information about the current mining operation",
+			summary: "gives you information about the current mining operation",
 			arity:   0,
 			handler: m.info,
 		},

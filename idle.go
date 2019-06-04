@@ -20,37 +20,37 @@ func Idle(sys *System) ConnectionState {
 		NearbyCommand(sys),
 		Command{
 			name:    "goto",
-			help:    "travel between star systems",
+			summary: "travel between star systems",
 			arity:   1,
 			handler: i.travelTo,
 		},
 		Command{
 			name:    "bomb",
-			help:    "bomb another star system",
+			summary: "bomb another star system",
 			arity:   1,
 			handler: i.bomb,
 		},
 		Command{
 			name:    "mine",
-			help:    "mine the current system for resources",
+			summary: "mine the current system for resources",
 			arity:   0,
 			handler: i.mine,
 		},
 		Command{
 			name:    "info",
-			help:    "gives you information about the current star system",
+			summary: "gives you information about the current star system",
 			arity:   0,
 			handler: i.info,
 		},
 		Command{
 			name:    "scan",
-			help:    "scans the galaxy for signs of life",
+			summary: "scans the galaxy for signs of life",
 			arity:   0,
 			handler: i.scan,
 		},
 		Command{
 			name:    "make",
-			help:    "makes things",
+			summary: "makes things",
 			handler: i.maek,
 		},
 	}
