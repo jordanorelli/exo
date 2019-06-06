@@ -150,17 +150,17 @@ func (c *Connection) Name() string {
 }
 
 func (c *Connection) RecordScan() {
-	c.Printf("scanning known systems for signs of life\n")
+	c.Printf("Scanning known systems for signs of life\n")
 	c.lastScan = time.Now()
 	time.AfterFunc(options.scanTime, func() {
-		c.Printf("scanner ready\n")
+		c.Printf("Scanner ready\n")
 	})
 }
 
 func (c *Connection) RecordBomb() {
 	c.lastBomb = time.Now()
 	time.AfterFunc(15*time.Second, func() {
-		fmt.Fprintln(c, "bomb arsenal reloaded")
+		fmt.Fprintln(c, "Bomb arsenal reloaded")
 	})
 }
 
@@ -205,27 +205,6 @@ func (c *Connection) Win(method string) {
 func (c *Connection) Die(frame int64) {
 	c.SetState(NewDeadState(frame))
 }
-
-type ConnectionState interface {
-	CommandSuite
-	String() string
-	FillStatus(*Connection, *status)
-	Enter(c *Connection)
-	Tick(c *Connection, frame int64) ConnectionState
-	Exit(c *Connection)
-}
-
-// No-op enter struct, for composing connection states that have no interesitng
-// Enter mechanic.
-type NopEnter struct{}
-
-func (n NopEnter) Enter(c *Connection) {}
-
-// No-op exit struct, for composing connection states that have no interesting
-// Exit mechanic.
-type NopExit struct{}
-
-func (n NopExit) Exit(c *Connection) {}
 
 func SpawnRandomly() ConnectionState {
 	sys, err := randomSystem()
