@@ -28,6 +28,7 @@ func Idle(sys *System) ConnectionState {
 			name:    "bomb",
 			summary: "bomb another star system",
 			arity:   1,
+			usage:   "bomb [system-name or system-id]",
 			handler: i.bomb,
 		},
 		Command{
@@ -35,12 +36,6 @@ func Idle(sys *System) ConnectionState {
 			summary: "mine the current system for resources",
 			arity:   0,
 			handler: i.mine,
-		},
-		Command{
-			name:    "info",
-			summary: "gives you information about the current star system",
-			arity:   0,
-			handler: i.info,
 		},
 		Command{
 			name:    "scan",
@@ -104,11 +99,6 @@ func (i *IdleState) mine(c *Connection, args ...string) {
 	c.SetState(Mine(i.System))
 }
 
-func (i *IdleState) info(c *Connection, args ...string) {
-	c.Printf("Currently idle on system %v\n", i.System)
-	c.Printf("Space duckets available: %v\n", i.money)
-}
-
 func (i *IdleState) scan(c *Connection, args ...string) {
 	if time.Since(c.lastScan) < 1*time.Minute {
 		return
@@ -119,6 +109,10 @@ func (i *IdleState) scan(c *Connection, args ...string) {
 
 // "make" is already a keyword
 func (i *IdleState) maek(c *Connection, args ...string) {
+	if len(args) != 1 {
+		c.Printf("not sure what to do! Expecting a command like this: make [thing]\ne.g.:\nmake bomb\nmake colony")
+		return
+	}
 	switch args[0] {
 	case "bomb":
 		if c.money < options.bombCost {
@@ -136,6 +130,7 @@ func (i *IdleState) maek(c *Connection, args ...string) {
 	}
 }
 
-func (i *IdleState) PrintStatus(c *Connection) {
-	panic("not done")
+func (i *IdleState) FillStatus(c *Connection, s *status) {
+	s.Location = i.System.String()
+	s.Description = "Just hanging out, enjoying outer space."
 }

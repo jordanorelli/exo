@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type MiningState struct {
@@ -22,12 +23,6 @@ func Mine(sys *System) ConnectionState {
 			summary: "stops mining",
 			arity:   0,
 			handler: m.stop,
-		},
-		Command{
-			name:    "info",
-			summary: "gives you information about the current mining operation",
-			arity:   0,
-			handler: m.info,
 		},
 	}
 	return m
@@ -65,12 +60,11 @@ func (m *MiningState) stop(c *Connection, args ...string) {
 	c.SetState(Idle(m.System))
 }
 
-func (m *MiningState) info(c *Connection, args ...string) {
-	c.Printf("Currently mining system %v\n", m.System)
-	c.Printf("Mined so far: %v\n", m.mined)
-	c.Printf("Remaining space duckets on %v: %v\n", m.System, m.money)
-}
-
-func (m *MiningState) PrintStatus(c *Connection) {
-	panic("not done")
+func (m *MiningState) FillStatus(c *Connection, s *status) {
+	s.Location = m.System.String()
+	s.Description = strings.TrimSpace(fmt.Sprintf(`
+Currently mining on system: %s
+Mined so far:               %d
+Available space duckets:    %d
+`, m.System.String(), m.mined, m.money))
 }

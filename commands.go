@@ -6,11 +6,42 @@ import (
 	"text/template"
 )
 
+var helpTemplate = template.Must(template.New("help").Parse(`
+{{.Name}} Command Reference
+
+  Summary: {{.Summary}}
+{{- if .Usage}}
+  Usage:   {{.Usage}}
+{{end}}
+{{- if .Description}}
+Details:
+
+  {{.Description}}
+{{end}}
+`))
+
+func printHelp(conn *Connection, cmd *Command) {
+	desc := strings.ReplaceAll(strings.TrimSpace(cmd.help), "\n", "\n  ")
+	helpTemplate.Execute(conn, struct {
+		Name        string
+		Summary     string
+		Usage       string
+		Description string
+	}{
+		Name:        cmd.name,
+		Summary:     cmd.summary,
+		Usage:       cmd.usage,
+		Description: desc,
+	})
+}
+
 var commandRegistry map[string]*Command
 
 type Command struct {
 	name     string
 	summary  string
+	usage    string
+	help     string
 	arity    int
 	variadic bool
 	handler  func(*Connection, ...string)
@@ -58,7 +89,14 @@ func (c CommandSet) Commands() []Command {
 
 var helpCommand = Command{
 	name:    "help",
-	summary: "helpful things to help you",
+	summary: "explains how to play the game",
+	usage:   "help [command-name]",
+	help: `
+help explains the usage of various commands in Exocolonus. On its own, the help
+command displays some basic info about how the game is played. If given an
+argument of a command name, the help command displays the detailed usage of the
+specified command.
+`,
 	handler: func(conn *Connection, args ...string) {
 		msg := `
 Exocolonus is a game of cunning text-based, real-time strategy.  You play as
@@ -98,14 +136,14 @@ are farther away take longer to communicate with.
 				conn.Printf("no such command: %v\n", cmdName)
 				continue
 			}
-			conn.Printf("%v: %v\n", cmdName, cmd.summary)
+			printHelp(conn, cmd)
 		}
 	},
 }
 
 type status struct {
-	GameCode    string
 	State       string
+	GameCode    string
 	Balance     int
 	Bombs       int
 	Kills       int
@@ -114,13 +152,15 @@ type status struct {
 }
 
 var statusTemplate = template.Must(template.New("status").Parse(`
---------------------------------------------------------------------------------
-Current Game:  {{.GameCode}}
 Current State: {{.State}}
+--------------------------------------------------------------------------------
+{{- if .GameCode}}
+Current Game:  {{.GameCode}}
 Balance:       {{.Balance}}
 Bombs:         {{.Bombs}}
 Kills:         {{.Kills}}
 Location:      {{.Location}}
+{{end}}
 
 {{.Description}}
 
@@ -130,7 +170,17 @@ var statusCommand = Command{
 	name:    "status",
 	summary: "display your current status",
 	handler: func(conn *Connection, args ...string) {
-		conn.ConnectionState.PrintStatus(conn)
+		s := status{
+			State: conn.ConnectionState.String(),
+		}
+		conn.ConnectionState.FillStatus(conn, &s)
+		if conn.game != nil {
+			s.GameCode = conn.game.id
+			s.Balance = conn.money
+			s.Bombs = conn.bombs
+			s.Kills = conn.kills
+		}
+		statusTemplate.Execute(conn, s)
 	},
 }
 
@@ -138,7 +188,7 @@ var statusCommand = Command{
 // is weird and circular, this is a special case.
 var commandsCommand = Command{
 	name:    "commands",
-	summary: "gives you a handy list of commands",
+	summary: "lists currently available commands",
 }
 
 func BroadcastCommand(sys *System) Command {

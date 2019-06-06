@@ -209,7 +209,7 @@ func (c *Connection) Die(frame int64) {
 type ConnectionState interface {
 	CommandSuite
 	String() string
-	PrintStatus(c *Connection)
+	FillStatus(*Connection, *status)
 	Enter(c *Connection)
 	Tick(c *Connection, frame int64) ConnectionState
 	Exit(c *Connection)

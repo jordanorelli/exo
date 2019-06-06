@@ -84,7 +84,7 @@ func (st *LobbyState) Enter(c *Connection) {
 			c.profile = profile
 		} else {
 			c.profile = profile
-			c.Printf("welcome back, %s.\n", profile.name)
+			c.Printf("Welcome back, %s.\n", profile.name)
 		}
 		break
 	}
@@ -93,8 +93,11 @@ func (st *LobbyState) Enter(c *Connection) {
 
 func (st *LobbyState) Tick(c *Connection, frame int64) ConnectionState { return st }
 
-func (st *LobbyState) PrintStatus(c *Connection) {
-	panic("not done")
+func (st *LobbyState) FillStatus(c *Connection, s *status) {
+	s.Description = strings.TrimSpace(`
+Currently in the Lobby, waiting for you to issue a "new" command to start a new
+game, or a "join" command to join an existing game.
+`)
 }
 
 var newGameCommand = Command{
@@ -119,9 +122,18 @@ var newGameCommand = Command{
 var joinGameCommand = Command{
 	name:     "join",
 	summary:  "joins an existing game",
+	usage:    "join [game-code]",
 	arity:    1,
 	variadic: false,
 	handler: func(c *Connection, args ...string) {
+		if len(args) == 0 {
+			c.Printf(strings.TrimLeft(`
+Missing game code! When a player starts a game, they will be given a code to
+identify their game. Use this game to join the other player's game.
+
+Usage: join [game-code]`, " \n\t"))
+			return
+		}
 		id := args[0]
 		c.game = gm.Get(id)
 		c.SetState(SpawnRandomly())

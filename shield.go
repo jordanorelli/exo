@@ -46,8 +46,8 @@ func (m *MakeShieldState) String() string {
 	return fmt.Sprintf("Making shield on %v", m.System)
 }
 
-func (m *MakeShieldState) PrintStatus(c *Connection) {
-	panic("not done")
+func (m *MakeShieldState) FillStatus(c *Connection, s *status) {
+	s.Location = m.System.String()
 }
 
 type Shield struct {

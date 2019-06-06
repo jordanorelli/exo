@@ -63,6 +63,4 @@ func (e *ErrorState) RunCommand(c *Connection, name string, args ...string) Conn
 	return e
 }
 
-func (e *ErrorState) PrintStatus(c *Connection) {
-	panic("not done")
-}
+func (e *ErrorState) FillStatus(c *Connection, s *status) {}

@@ -78,21 +78,23 @@ func (m *MakeBombState) Tick(c *Connection, frame int64) ConnectionState {
 	return m
 }
 
+func (MakeBombState) String() string { return "Making a Bomb" }
+
 func (m *MakeBombState) Exit(c *Connection) {
 	c.bombs += 1
 	c.Printf("Done!  You now have %v bombs.\n", c.bombs)
 }
 
-func (m *MakeBombState) PrintStatus(c *Connection) {
+func (m *MakeBombState) FillStatus(c *Connection, s *status) {
 	elapsedFrames := c.game.frame - m.start
 	elapsedDur := framesToDur(elapsedFrames)
 
-	msg := fmt.Sprintf(`
+	desc := fmt.Sprintf(`
 Currently making a bomb!
 
-Current System:       %s
 Build time elapsed:   %v
 Build time remaining: %v
-`, m.System, elapsedDur, options.makeBombTime-elapsedDur)
-	c.Printf(strings.TrimSpace(msg))
+`, elapsedDur, options.makeBombTime-elapsedDur)
+	s.Description = strings.TrimSpace(desc)
+	s.Location = m.System.String()
 }

@@ -49,6 +49,6 @@ func (m *MakeColonyState) Exit(c *Connection) {
 	c.Printf("Established colony on %v.\n", m.System)
 }
 
-func (m *MakeColonyState) PrintStatus(c *Connection) {
-	panic("not done")
+func (m *MakeColonyState) FillStatus(c *Connection, s *status) {
+	s.Location = m.System.String()
 }

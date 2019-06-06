@@ -26,10 +26,6 @@ func (d *DeadState) Exit(c *Connection) {
 	c.Printf("You're alive again.\n")
 }
 
-func (d *DeadState) String() string {
-	return "dead"
-}
+func (d *DeadState) String() string { return "dead" }
 
-func (d *DeadState) PrintStatus(c *Connection) {
-	panic("not done")
-}
+func (d *DeadState) FillStatus(c *Connection, s *status) {}

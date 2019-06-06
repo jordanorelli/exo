@@ -107,17 +107,8 @@ func (t *TravelState) String() string {
 	return fmt.Sprintf("Traveling from %v to %v", t.start, t.dest)
 }
 
-func (t *TravelState) PrintStatus(c *Connection) {
-	desc := fmt.Sprintf("Traveling from %v to %v", t.start, t.dest)
-	statusTemplate.Execute(c, status{
-		GameCode:    c.game.id,
-		State:       "In Transit",
-		Balance:     c.money,
-		Bombs:       c.bombs,
-		Kills:       c.kills,
-		Location:    fmt.Sprintf("%s -> %s", t.start, t.dest),
-		Description: desc,
-	})
+func (t *TravelState) FillStatus(c *Connection, s *status) {
+	s.Location = fmt.Sprintf("between %s and %s", t.start, t.dest)
 }
 
 func (t *TravelState) progress(c *Connection, args ...string) {
