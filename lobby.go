@@ -108,7 +108,7 @@ var newGameCommand = Command{
 	handler: func(c *Connection, args ...string) {
 		c.Printf("Starting a new game...\n")
 		game := gm.NewGame()
-		log_info("Created game: %s", game.id)
+		log_info("%s Created game: %s", c.profile.name, game.id)
 		go game.Run()
 		c.game = game
 		c.Printf("Now playing in game: %s\n\n", game.id)
@@ -136,6 +136,7 @@ Usage: join [game-code]`, " \n\t"))
 		}
 		id := args[0]
 		c.game = gm.Get(id)
+		log_info("%s Joining game: %s", c.profile.name, c.game.id)
 		c.SetState(SpawnRandomly())
 		c.game.Join(c)
 	},

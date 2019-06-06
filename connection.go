@@ -74,7 +74,7 @@ func (c *Connection) RunCommand(name string, args ...string) {
 func (c *Connection) ListCommands() {
 	c.Printf("\n")
 	c.Line()
-	c.Printf("- Available Commands\n")
+	c.Printf("- Available Commands in state: %s\n", c.ConnectionState.String())
 	c.Line()
 	commands := c.Commands()
 	names := make([]string, len(commands))
@@ -135,7 +135,9 @@ func (c *Connection) Printf(template string, args ...interface{}) (int, error) {
 
 func (c *Connection) Close() error {
 	log_info("player disconnecting: %s", c.Name())
-	c.game.Quit(c)
+	if c.game != nil {
+		c.game.Quit(c)
+	}
 	if c.Conn != nil {
 		return c.Conn.Close()
 	}
