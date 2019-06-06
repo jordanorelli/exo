@@ -112,6 +112,11 @@ objective of the game is to be the first person or alien or bug or magical
 space ponycorn to eradicate three enemy species.  Right now that is the only
 win condition.
 
+Exocolonus deals with relativity with respect to observation. When an effect
+takes place, knowledge of that effect travels throughougt the galaxy at the
+speed of light. If a system is bombed, the closest systems to it will know
+first. When you broadcast messages, they travel at the speed of light.
+
 All of the systems present in Exocolonus are named and positioned after known
 exoplanet systems.  Each star system in Exocolonus is a real star system that
 has been researched by astronomers, and the number of planets in each system
