@@ -114,7 +114,7 @@ var newGameCommand = Command{
 		c.Printf("Now playing in game: %s\n\n", game.id)
 		c.Line()
 		c.game.Join(c)
-		c.SetState(SpawnRandomly())
+		c.SetState(game.SpawnPlayer())
 	},
 	debug: false,
 }
@@ -135,9 +135,10 @@ Usage: join [game-code]`, " \n\t"))
 			return
 		}
 		id := args[0]
-		c.game = gm.Get(id)
+		game := gm.Get(id)
+		c.game = game
 		log_info("%s Joining game: %s", c.profile.name, c.game.id)
-		c.SetState(SpawnRandomly())
+		c.SetState(game.SpawnPlayer())
 		c.game.Join(c)
 	},
 	debug: false,

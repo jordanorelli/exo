@@ -12,6 +12,7 @@ type scan struct {
 	nextHitIndex  int
 	nextEchoIndex int
 	results       []scanResult
+	neighborhood  Neighborhood
 }
 
 type scanResult struct {
@@ -38,17 +39,18 @@ func (r *scanResult) playerNames() []string {
 	return names
 }
 
-func NewScan(origin *System) *scan {
+func NewScan(origin *System, n Neighborhood) *scan {
 	return &scan{
-		origin:  origin,
-		start:   time.Now(),
-		results: make([]scanResult, 0, len(origin.Distances())),
+		origin:       origin,
+		start:        time.Now(),
+		results:      make([]scanResult, 0, len(origin.Distances())),
+		neighborhood: n,
 	}
 }
 
-func (s *scan) Tick(frame int64) {
+func (s *scan) Tick(game *Game) {
 	s.dist += options.lightSpeed
-	s.hits()
+	s.hits(game)
 	s.echos()
 }
 
@@ -60,14 +62,17 @@ func (s *scan) String() string {
 	return fmt.Sprintf("[scan origin: %s start_time: %v]", s.origin.name, s.start)
 }
 
-func (s *scan) hits() {
-	for ; s.nextHitIndex < len(s.origin.Distances()); s.nextHitIndex += 1 {
-		candidate := s.origin.Distances()[s.nextHitIndex]
-		if s.dist < candidate.dist {
-			break
+func (s *scan) hits(game *Game) {
+	for len(s.neighborhood) > 0 && s.neighborhood[0].distance <= s.dist {
+		sys := game.galaxy.GetSystemByID(s.neighborhood[0].id)
+		s.results = append(s.results, s.hitSystem(sys, s.neighborhood[0].distance))
+		log_info("scan hit %v. Traveled %v in %v", sys.name, s.neighborhood[0].distance, time.Since(s.start))
+
+		if len(s.neighborhood) > 1 {
+			s.neighborhood = s.neighborhood[1:]
+		} else {
+			s.neighborhood = nil
 		}
-		s.results = append(s.results, s.hitSystem(candidate.s, candidate.dist))
-		log_info("scan hit %v. Traveled %v in %v", candidate.s.name, candidate.dist, time.Since(s.start))
 	}
 }
 

@@ -18,7 +18,7 @@ var options struct {
 	frameLength    time.Duration
 	colonyCost     int
 	frameRate      int
-	lightSpeed     float64
+	lightSpeed     float64 // the distance that light travels in one tick
 	makeBombTime   time.Duration
 	makeColonyTime time.Duration
 	makeShieldTime time.Duration

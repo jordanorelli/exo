@@ -9,8 +9,8 @@ type broadcast struct {
 	start        time.Time
 	origin       *System
 	dist         float64
-	nextHitIndex int
 	message      string
+	neighborhood Neighborhood
 }
 
 func NewBroadcast(from *System, template string, args ...interface{}) *broadcast {
@@ -21,20 +21,27 @@ func NewBroadcast(from *System, template string, args ...interface{}) *broadcast
 	}
 }
 
-func (b *broadcast) Tick(frame int64) {
+func (b *broadcast) Tick(game *Game) {
+	if b.neighborhood == nil {
+		log_info("setting up neighborhood for broadcast: %s", b.message)
+		b.neighborhood = game.galaxy.Neighborhood(b.origin)
+		log_info("nearest neighbor: %v", b.neighborhood[0])
+	}
+
 	b.dist += options.lightSpeed
-	for ; b.nextHitIndex < len(b.origin.Distances()); b.nextHitIndex += 1 {
-		candidate := b.origin.Distances()[b.nextHitIndex]
-		if b.dist < candidate.dist {
-			break
+	for len(b.neighborhood) > 0 && b.neighborhood[0].distance <= b.dist {
+		s := game.galaxy.GetSystemByID(b.neighborhood[0].id)
+		log_info("broadcast %s has reached %s from %s", b.message, s, b.origin)
+		s.NotifyInhabitants("message received from system %v:\n\t%s\n", b.origin, b.message)
+		if len(b.neighborhood) > 1 {
+			b.neighborhood = b.neighborhood[1:]
+		} else {
+			b.neighborhood = nil
 		}
-		candidate.s.NotifyInhabitants("message received from system %v:\n\t%s\n", b.origin, b.message)
 	}
 }
 
-func (b *broadcast) Dead() bool {
-	return b.dist > b.origin.Distances()[len(b.origin.Distances())-1].dist
-}
+func (b *broadcast) Dead() bool { return b.neighborhood == nil }
 
 func (b *broadcast) String() string {
 	return fmt.Sprintf("[broadcast origin: %v message: %s]", b.origin, b.message)

@@ -25,13 +25,13 @@ type System struct {
 	money       int64
 }
 
-func (s *System) Tick(frame int64) {
+func (s *System) Tick(game *Game) {
 	if s.colonizedBy != nil && s.money > 0 {
 		s.colonizedBy.Deposit(1)
 		s.money -= 1
 	}
 	if s.Shield != nil {
-		s.Shield.Tick(frame)
+		s.Shield.Tick()
 	}
 }
 
@@ -45,7 +45,6 @@ func (s *System) Reset() {
 }
 
 func (s *System) Arrive(conn *Connection) {
-	// conn.SetSystem(s)
 	if s.players[conn] {
 		return
 	}
@@ -125,11 +124,11 @@ func (s *System) Distances() []Ray {
 	if s.distances == nil {
 		s.distances = make([]Ray, 0, 551)
 		rows, err := db.Query(`
-            select edges.id_2, edges.distance
-            from edges
-            where edges.id_1 = ?
-            order by distance
-        ;`, s.id)
+			select edges.id_2, edges.distance
+			from edges
+			where edges.id_1 = ?
+			order by distance
+		;`, s.id)
 		if err != nil {
 			log_error("unable to query for system distances: %v", err)
 			return nil
@@ -246,14 +245,4 @@ func indexSystems() map[int]*System {
 		// log_info("seeded system %v with %v monies", p, p.money)
 	}
 	return index
-}
-
-func randomSystem() (*System, error) {
-	n := len(index)
-	if n == 0 {
-		return nil, fmt.Errorf("no planets are known to exist")
-	}
-	pick := rand.Intn(n)
-	sys := index[pick]
-	return sys, nil
 }

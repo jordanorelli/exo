@@ -54,7 +54,7 @@ type Shield struct {
 	energy float64
 }
 
-func (s *Shield) Tick(frame int64) {
+func (s *Shield) Tick() {
 	if s.energy < 1000 {
 		s.energy += (1000 - s.energy) * 0.0005
 	}

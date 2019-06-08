@@ -70,8 +70,16 @@ func (g *Galaxy) SystemID(name string) int { return g.names[name] }
 func (g *Galaxy) Neighborhood(sys *System) Neighborhood {
 	neighbors := make(Neighborhood, 0, len(g.systems))
 	for id, sys2 := range g.systems {
+		if id == sys.id {
+			continue
+		}
 		neighbors = append(neighbors, Neighbor{id: id, distance: sys.DistanceTo(sys2)})
 	}
 	sort.Sort(neighbors)
 	return neighbors
+}
+
+func (g *Galaxy) randomSystem() *System {
+	id := rand.Intn(len(g.systems))
+	return g.GetSystemByID(id)
 }

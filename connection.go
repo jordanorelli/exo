@@ -40,14 +40,14 @@ func (c *Connection) Dead() bool {
 	return false
 }
 
-func (c *Connection) Tick(frame int64) {
+func (c *Connection) Tick(game *Game) {
 	if c.ConnectionState == nil {
 		log_error("connected client has nil state.")
 		c.Printf("somehow you have a nil state.  I don't know what to do so I'm going to kick you off.")
 		c.Close()
 		return
 	}
-	c.SetState(c.ConnectionState.Tick(c, frame))
+	c.SetState(c.ConnectionState.Tick(c, game.frame))
 }
 
 func (c *Connection) RunCommand(name string, args ...string) {
@@ -220,12 +220,4 @@ func (c *Connection) Win(method string) {
 
 func (c *Connection) Die(frame int64) {
 	c.SetState(NewDeadState(frame))
-}
-
-func SpawnRandomly() ConnectionState {
-	sys, err := randomSystem()
-	if err != nil {
-		return NewErrorState(fmt.Errorf("unable to create idle state: %v", err))
-	}
-	return Idle(sys)
 }

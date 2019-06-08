@@ -17,7 +17,7 @@ func (d *DeadState) Enter(c *Connection) {
 
 func (d *DeadState) Tick(c *Connection, frame int64) ConnectionState {
 	if frame-d.start > options.respawnFrames {
-		return SpawnRandomly()
+		return c.game.SpawnPlayer()
 	}
 	return d
 }

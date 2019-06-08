@@ -33,10 +33,10 @@ func (b *Bomb) Dead() bool {
 	return b.done
 }
 
-func (b *Bomb) Tick(frame int64) {
+func (b *Bomb) Tick(game *Game) {
 	b.fti -= 1
 	if b.fti <= 0 {
-		b.target.Bombed(b.profile, frame)
+		b.target.Bombed(b.profile, game.frame)
 		b.done = true
 		log_info("bomb went off on %v", b.target)
 	}

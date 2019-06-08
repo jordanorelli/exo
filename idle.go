@@ -104,7 +104,7 @@ func (i *IdleState) scan(c *Connection, args ...string) {
 		return
 	}
 	c.Printf("Scanning the galaxy for signs of life...\n")
-	c.game.Register(NewScan(i.System))
+	c.game.Register(NewScan(i.System, c.game.galaxy.Neighborhood(i.System)))
 }
 
 // "make" is already a keyword

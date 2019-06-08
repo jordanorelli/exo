@@ -136,7 +136,7 @@ func (g *Game) Register(elem GameElement) {
 func (g *Game) tick() {
 	g.frame += 1
 	for elem := range g.elems {
-		elem.Tick(g.frame)
+		elem.Tick(g)
 	}
 	for elem := range g.elems {
 		if elem.Dead() {
@@ -146,7 +146,11 @@ func (g *Game) tick() {
 	}
 }
 
+func (g *Game) SpawnPlayer() ConnectionState {
+	return Idle(g.galaxy.randomSystem())
+}
+
 type GameElement interface {
-	Tick(frame int64)
+	Tick(*Game)
 	Dead() bool
 }
