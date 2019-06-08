@@ -52,60 +52,9 @@ func planetsData() {
 	indexSystems()
 }
 
-func edgesTable() {
-	stmnt := `create table if not exists edges (
-        id_1 integer,
-        id_2 integer,
-        distance real
-    );`
-	if _, err := db.Exec(stmnt); err != nil {
-		log_error("couldn't create distance table: %v", err)
-	}
-}
-
 func setupDb() {
 	planetsTable()
 	planetsData()
-	edgesTable()
 	profilesTable()
 	gamesTable()
-	fillEdges()
-}
-
-func fillEdges() {
-	row := db.QueryRow(`select count(*) from edges;`)
-	var n int
-	if err := row.Scan(&n); err != nil {
-		log_error("couldn't get number of edges: %v", err)
-		return
-	}
-	if n > 0 {
-		return
-	}
-	for i := 0; i < len(index); i++ {
-		for j := 0; j < len(index); j++ {
-			if i == j {
-				continue
-			}
-			if index[i] == nil {
-				log_error("wtf there's nil shit in here for id %d", i)
-				continue
-			}
-			if index[j] == nil {
-				log_error("wtf there's nil shit in here 2 for id %d", j)
-				continue
-			}
-			dist := index[i].DistanceTo(index[j])
-			log_info("distance from %s to %s: %v", index[i].name, index[j].name, dist)
-			_, err := db.Exec(`
-                insert into edges
-                (id_1, id_2, distance)
-                values
-                (?, ?, ?)
-            ;`, i, j, dist)
-			if err != nil {
-				log_error("unable to write edge to db: %v", err)
-			}
-		}
-	}
 }
