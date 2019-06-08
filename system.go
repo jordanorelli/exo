@@ -120,37 +120,6 @@ type Ray struct {
 	dist float64 // distance in parsecs
 }
 
-func (s *System) Distances() []Ray {
-	if s.distances == nil {
-		s.distances = make([]Ray, 0, 551)
-		rows, err := db.Query(`
-			select edges.id_2, edges.distance
-			from edges
-			where edges.id_1 = ?
-			order by distance
-		;`, s.id)
-		if err != nil {
-			log_error("unable to query for system distances: %v", err)
-			return nil
-		}
-		for rows.Next() {
-			var (
-				r    Ray
-				id   int
-				dist float64
-			)
-			if err := rows.Scan(&id, &dist); err != nil {
-				log_error("unable to unpack Ray from sql result: %v", err)
-				continue
-			}
-			r.s = index[id]
-			r.dist = dist
-			s.distances = append(s.distances, r)
-		}
-	}
-	return s.distances
-}
-
 func (s *System) Bombed(bomber *Connection, frame int64) {
 	if s.Shield != nil {
 		if s.Shield.Hit() {

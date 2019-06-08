@@ -43,7 +43,7 @@ func NewScan(origin *System, n Neighborhood) *scan {
 	return &scan{
 		origin:       origin,
 		start:        time.Now(),
-		results:      make([]scanResult, 0, len(origin.Distances())),
+		results:      make([]scanResult, 0, len(n)),
 		neighborhood: n,
 	}
 }
@@ -55,7 +55,7 @@ func (s *scan) Tick(game *Game) {
 }
 
 func (s *scan) Dead() bool {
-	return s.nextEchoIndex >= len(s.origin.Distances())
+	return s.neighborhood == nil
 }
 
 func (s *scan) String() string {
