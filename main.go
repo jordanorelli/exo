@@ -55,7 +55,8 @@ func bail(status int, template string, args ...interface{}) {
 	os.Exit(status)
 }
 
-func handleConnection(conn *Connection) {
+func handleConnection(sock net.Conn) {
+	conn := NewConnection(sock)
 	defer conn.Close()
 
 	c := make(chan []string)
@@ -99,7 +100,7 @@ func main() {
 			log_error("error accepting connection: %v", err)
 			continue
 		}
-		go handleConnection(NewConnection(conn))
+		go handleConnection(conn)
 	}
 }
 
