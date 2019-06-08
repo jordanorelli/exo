@@ -16,6 +16,7 @@ type Game struct {
 	connections map[*Connection]bool
 	frame       int64
 	elems       map[GameElement]bool
+	galaxy      *Galaxy
 }
 
 func gamesTable() {
@@ -49,6 +50,7 @@ func NewGame() *Game {
 		done:        make(chan interface{}),
 		connections: make(map[*Connection]bool, 32),
 		elems:       make(map[GameElement]bool, 32),
+		galaxy:      NewGalaxy(),
 	}
 	if err := game.Create(); err != nil {
 		log_error("unable to create game: %v", err)

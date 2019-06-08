@@ -211,15 +211,11 @@ func BroadcastCommand(sys *System) Command {
 
 func NearbyCommand(sys *System) Command {
 	handler := func(c *Connection, args ...string) {
-		neighbors, err := sys.Nearby(25)
-		if err != nil {
-			log_error("unable to get neighbors: %v", err)
-			return
-		}
+		neighbors := c.game.galaxy.Neighborhood(sys)
 		c.Printf("--------------------------------------------------------------------------------\n")
 		c.Printf("%-4s %-20s %-12s %s\n", "id", "name", "distance", "trip time")
 		c.Printf("--------------------------------------------------------------------------------\n")
-		for _, neighbor := range neighbors {
+		for _, neighbor := range neighbors[:25] {
 			other := index[neighbor.id]
 			dur := NewTravel(c, sys, other).(*TravelState).tripTime()
 			c.Printf("%-4d %-20s %-12.6v %v\n", other.id, other.name, neighbor.distance, dur)

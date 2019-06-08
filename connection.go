@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -52,9 +53,22 @@ func (c *Connection) Tick(frame int64) {
 func (c *Connection) RunCommand(name string, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
-			c.Printf("something is broken.  Log this as a ticket!\n")
-			c.Printf("recovered: %v\n", r)
+			c.Printf("(something is broken)")
+			c.Printf("ERROR: %v\n", r)
+			callers := make([]uintptr, 40)
+			n := runtime.Callers(5, callers)
+			callers = callers[:n]
+			frames := runtime.CallersFrames(callers)
 			log_error("recovered: %v", r)
+			for {
+				frame, more := frames.Next()
+
+				if !more {
+					break
+				}
+
+				log_error("  %s +%d (%s)\n", frame.File, frame.Line, frame.Function)
+			}
 		}
 	}()
 	switch name {

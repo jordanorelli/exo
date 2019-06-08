@@ -65,9 +65,9 @@ func (i *IdleState) Tick(c *Connection, frame int64) ConnectionState {
 }
 
 func (i *IdleState) travelTo(c *Connection, args ...string) {
-	dest, err := GetSystem(args[0])
-	if err != nil {
-		c.Printf("%v\n", err)
+	dest := c.game.galaxy.GetSystem(args[0])
+	if dest == nil {
+		c.Printf("no such system: %s", args[0])
 		return
 	}
 	c.SetState(NewTravel(c, i.System, dest))
@@ -83,9 +83,9 @@ func (i *IdleState) bomb(c *Connection, args ...string) {
 		return
 	}
 
-	target, err := GetSystem(args[0])
-	if err != nil {
-		c.Printf("Cannot send bomb: %v\n", err)
+	target := c.game.galaxy.GetSystem(args[0])
+	if target == nil {
+		c.Printf("Cannot send bomb: no such system: %v\n", args[0])
 		return
 	}
 

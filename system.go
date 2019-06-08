@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -24,22 +23,6 @@ type System struct {
 	colonizedBy *Connection
 	distances   []Ray
 	money       int64
-}
-
-func GetSystem(id string) (*System, error) {
-	idNum, err := strconv.Atoi(id)
-	if err == nil {
-		sys, ok := index[idNum]
-		if !ok {
-			return nil, fmt.Errorf("No such system: %v", idNum)
-		}
-		return sys, nil
-	}
-	sys, ok := nameIndex[id]
-	if !ok {
-		return nil, fmt.Errorf("No such system: %v", id)
-	}
-	return sys, nil
 }
 
 func (s *System) Tick(frame int64) {
@@ -215,34 +198,15 @@ func (s System) String() string {
 	return fmt.Sprintf("%s (id: %v)", s.name, s.id)
 }
 
+type Neighborhood []Neighbor
+
+func (n Neighborhood) Len() int           { return len(n) }
+func (n Neighborhood) Less(i, j int) bool { return n[i].distance < n[j].distance }
+func (n Neighborhood) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
+
 type Neighbor struct {
 	id       int
 	distance float64
-}
-
-func (e *System) Nearby(n int) ([]Neighbor, error) {
-	rows, err := db.Query(`
-        select planets.id, edges.distance
-        from edges
-        join planets on edges.id_2 = planets.id
-        where edges.id_1 = ?
-        order by distance
-        limit ?
-    ;`, e.id, n)
-	if err != nil {
-		log_error("unable to get nearby systems for %s: %v", e.name, err)
-		return nil, err
-	}
-	neighbors := make([]Neighbor, 0, n)
-	for rows.Next() {
-		var neighbor Neighbor
-		if err := rows.Scan(&neighbor.id, &neighbor.distance); err != nil {
-			log_error("error unpacking row from nearby neighbors query: %v", err)
-			continue
-		}
-		neighbors = append(neighbors, neighbor)
-	}
-	return neighbors, nil
 }
 
 func countSystems() (int, error) {
