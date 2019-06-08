@@ -49,7 +49,7 @@ func planetsData() {
 			planet.Store(db)
 		}
 	}
-	indexSystems()
+	// indexSystems()
 }
 
 func setupDb() {

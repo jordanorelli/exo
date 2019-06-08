@@ -4,13 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
-	"math/rand"
 	"time"
-)
-
-var (
-	index     map[int]*System
-	nameIndex map[string]*System
 )
 
 type System struct {
@@ -120,7 +114,7 @@ type Ray struct {
 	dist float64 // distance in parsecs
 }
 
-func (s *System) Bombed(bomber *Connection, frame int64) {
+func (s *System) Bombed(bomber *Connection, game *Game) {
 	if s.Shield != nil {
 		if s.Shield.Hit() {
 			s.EachConn(func(conn *Connection) {
@@ -133,7 +127,7 @@ func (s *System) Bombed(bomber *Connection, frame int64) {
 	}
 
 	s.EachConn(func(conn *Connection) {
-		conn.Die(frame)
+		conn.Die(game.frame)
 		s.Leave(conn)
 		bomber.MadeKill(conn)
 	})
@@ -142,21 +136,20 @@ func (s *System) Bombed(bomber *Connection, frame int64) {
 		s.colonizedBy = nil
 	}
 
-	for id, _ := range index {
+	for id, other := range game.galaxy.systems {
 		if id == s.id {
 			continue
 		}
-		delay := s.LightTimeTo(index[id])
-		id2 := id
+		delay := s.LightTimeTo(game.galaxy.systems[id])
+		from := s
+		to := other
 		time.AfterFunc(delay, func() {
-			bombNotice(id2, s.id)
+			bombNotice(to, from)
 		})
 	}
 }
 
-func bombNotice(to_id, from_id int) {
-	to := index[to_id]
-	from := index[from_id]
+func bombNotice(to, from *System) {
 	to.EachConn(func(conn *Connection) {
 		conn.Printf("a bombing has been observed on %s\n", from.name)
 	})
@@ -193,25 +186,25 @@ func dist3d(x1, y1, z1, x2, y2, z2 float64) float64 {
 	return math.Sqrt(sq(x1-x2) + sq(y1-y2) + sq(z1-z2))
 }
 
-func indexSystems() map[int]*System {
-	rows, err := db.Query(`select * from planets`)
-	if err != nil {
-		log_error("unable to select all planets: %v", err)
-		return nil
-	}
-	defer rows.Close()
-	index = make(map[int]*System, 551)
-	nameIndex = make(map[string]*System, 551)
-	for rows.Next() {
-		p := System{}
-		if err := rows.Scan(&p.id, &p.name, &p.x, &p.y, &p.z, &p.planets); err != nil {
-			log_info("unable to scan planet row: %v", err)
-			continue
-		}
-		index[p.id] = &p
-		nameIndex[p.name] = &p
-		p.money = int64(rand.NormFloat64()*options.moneySigma + options.moneyMean)
-		// log_info("seeded system %v with %v monies", p, p.money)
-	}
-	return index
-}
+// func indexSystems() map[int]*System {
+// 	rows, err := db.Query(`select * from planets`)
+// 	if err != nil {
+// 		log_error("unable to select all planets: %v", err)
+// 		return nil
+// 	}
+// 	defer rows.Close()
+// 	index = make(map[int]*System, 551)
+// 	nameIndex = make(map[string]*System, 551)
+// 	for rows.Next() {
+// 		p := System{}
+// 		if err := rows.Scan(&p.id, &p.name, &p.x, &p.y, &p.z, &p.planets); err != nil {
+// 			log_info("unable to scan planet row: %v", err)
+// 			continue
+// 		}
+// 		index[p.id] = &p
+// 		nameIndex[p.name] = &p
+// 		p.money = int64(rand.NormFloat64()*options.moneySigma + options.moneyMean)
+// 		// log_info("seeded system %v with %v monies", p, p.money)
+// 	}
+// 	return index
+// }

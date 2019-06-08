@@ -55,7 +55,7 @@ func NewGame() *Game {
 	if err := game.Create(); err != nil {
 		log_error("unable to create game: %v", err)
 	}
-	for _, system := range index {
+	for _, system := range game.galaxy.systems {
 		game.Register(system)
 	}
 	return game
