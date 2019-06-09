@@ -56,7 +56,6 @@ func (s *System) Arrive(conn *Connection) {
 
 func (s *System) Leave(p *Connection) {
 	delete(s.players, p)
-	// p.location = nil
 }
 
 func (s *System) NotifyInhabitants(template string, args ...interface{}) {
