@@ -85,6 +85,9 @@ func (g *Game) Store() error {
 
 func (g *Game) Join(conn *Connection) {
 	log_info("Player %s has joined game %s", conn.Name(), g.id)
+	for there, _ := range g.connections {
+		there.Printf("Player %s has joined the game", conn.Name())
+	}
 	g.connections[conn] = true
 	g.Register(conn)
 }
@@ -105,6 +108,8 @@ func (g *Game) Win(winner *Connection, method string) {
 	for conn, _ := range g.connections {
 		conn.Printf("player %s has won by %s victory.\n", winner.Name(), method)
 	}
+
+	gm.Remove(g)
 }
 
 func (g *Game) Reset() {

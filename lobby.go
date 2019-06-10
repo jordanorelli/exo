@@ -47,6 +47,7 @@ func EnterLobby() ConnectionState {
 		CommandSuite: CommandSet{
 			newGameCommand,
 			joinGameCommand,
+			listGamesCommand,
 		},
 	}
 }
@@ -127,6 +128,18 @@ var joinGameCommand = Command{
 	variadic: false,
 	handler: func(c *Connection, args ...string) {
 		if len(args) == 0 {
+			gm.Lock()
+			defer gm.Unlock()
+			if len(gm.games) == 1 {
+				for _, game := range gm.games {
+					c.game = game
+					log_info("%s Joining game: %s", c.profile.name, c.game.id)
+					c.Printf("You have joined game %s\n", game.id)
+					c.SetState(game.SpawnPlayer())
+					c.game.Join(c)
+					return
+				}
+			}
 			c.Printf(strings.TrimLeft(`
 Missing game code! When a player starts a game, they will be given a code to
 identify their game. Use this game to join the other player's game.
@@ -138,8 +151,35 @@ Usage: join [game-code]`, " \n\t"))
 		game := gm.Get(id)
 		c.game = game
 		log_info("%s Joining game: %s", c.profile.name, c.game.id)
+		c.Printf("You have joined game %s\n", game.id)
 		c.SetState(game.SpawnPlayer())
 		c.game.Join(c)
 	},
 	debug: false,
+}
+
+var listGamesCommand = Command{
+	name:     "list",
+	summary:  "lists game lobbies that can be joined",
+	usage:    "list",
+	arity:    0,
+	variadic: false,
+	handler: func(c *Connection, args ...string) {
+		gm.Lock()
+		defer gm.Unlock()
+
+		c.Line()
+		c.Printf("%-8s %-20s\n", "Game", "Player")
+		c.Line()
+
+		for id, game := range gm.games {
+			c.Printf("%-8s %-20s\n", id, "")
+			for conn, _ := range game.connections {
+				if conn.profile != nil {
+					c.Printf("%-8s %-20s\n", "", conn.profile.name)
+				}
+			}
+			c.Printf("--------------------\n")
+		}
+	},
 }

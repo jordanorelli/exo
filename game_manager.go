@@ -32,3 +32,10 @@ func (g *GameManager) Get(id string) *Game {
 
 	return g.games[id]
 }
+
+func (g *GameManager) Remove(game *Game) {
+	g.Lock()
+	defer g.Unlock()
+
+	delete(g.games, game.id)
+}
